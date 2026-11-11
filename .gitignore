@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# build output - published through GitHub Releases
+*.zip
