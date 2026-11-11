@@ -141,6 +141,7 @@ class UVED_OT_move_to_tile(EditOp, Operator):
         s = context.scene.uved
         objs, isl = targets(context)
         if not isl:
+            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
@@ -233,6 +234,9 @@ class UVED_OT_scale_islands(EditOp, Operator):
     def execute(self, context):
         s = context.scene.uved
         objs, isl = targets(context)
+        if not isl:
+            self.report({'WARNING'}, "No UV islands found")
+            return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
             i.scale(s.scale_u, s.scale_v, cx, cy)
@@ -262,6 +266,9 @@ class UVED_OT_transform_islands(EditOp, Operator):
     def execute(self, context):
         s = context.scene.uved
         objs, isl = targets(context)
+        if not isl:
+            self.report({'WARNING'}, "No UV islands found")
+            return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
             if self.mode == 'CW90':
@@ -293,6 +300,9 @@ class UVED_OT_auto_orient(EditOp, Operator):
 
     def execute(self, context):
         objs, isl = targets(context)
+        if not isl:
+            self.report({'WARNING'}, "No UV islands found")
+            return {'CANCELLED'}
         angles = np.radians(np.arange(0.0, 90.0, 0.5))
         for i in isl:
             p = i.pts()

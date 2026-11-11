@@ -191,7 +191,9 @@ class UVED_OT_stitch_selected(EditOp, Operator):
                     continue
                 A, B = points(edges)
                 if all((a - b).length < EPS for a, b in zip(A, B)):
+                    # an earlier group already brought these edges together
                     merge(ia, ib)
+                    stitched += len(edges)
                     continue
                 # a face that is mirrored in UV space has to be flipped to unfold correctly
                 la, lb = edges[0]

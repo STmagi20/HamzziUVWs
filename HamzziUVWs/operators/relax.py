@@ -129,6 +129,7 @@ class UVED_OT_relax(EditOp, Operator):
         # one plan per island that contains selected UV vertices
         plans = []
         outline_only = False
+        closed = 0
         for o in objs:
             for isl in o.islands():
                 inner = set(isl.joined)
@@ -140,7 +141,12 @@ class UVED_OT_relax(EditOp, Operator):
 
                 selected = {(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
                             if o.selected(l)}
-                free = ({(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
+                if selected and not any(on_outline(l) for f in isl.faces for l in f.loops):
+                    # every edge is joined in UV space (a folded, closed island): the
+                    # unwrap has no boundary to solve from and would fail
+                    closed += 1
+                    continue
+                free =({(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
                          if (f.index, k) in selected and not on_outline(l)}
                         if s.relax_pin_boundary else selected)
                 if not free:
@@ -156,7 +162,10 @@ class UVED_OT_relax(EditOp, Operator):
                     "wind": sum(face_winding(f, o.uv) for f in isl.faces),
                 })
         if not plans:
-            if outline_only:
+            if closed:
+                self.report({'WARNING'}, f"Relax could not solve {closed} island(s): they have no "
+                                         "open UV border; they were left unchanged")
+            elif outline_only:
                 self.report({'WARNING'}, "Only outline vertices are selected - select inner vertices "
                                          "or turn off Pin Boundary")
             else:
@@ -235,8 +244,9 @@ class UVED_OT_relax(EditOp, Operator):
                     if (fi, k) in p["free"]:
                         l[uv].uv = tuple(a + (b - a) * amount)
             ok = failed < len(plans)
-            if failed:
-                self.report({'WARNING'}, f"Relax could not solve {failed} island(s); they were left unchanged")
+            if failed or closed:
+                self.report({'WARNING'}, f"Relax could not solve {failed + closed} island(s); "
+                                         "they were left unchanged")
             if not ok:
                 return {'CANCELLED'}
         finally:
