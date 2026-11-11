@@ -7,6 +7,7 @@ import math
 
 import numpy as np
 from bpy.types import Operator
+from mathutils import Vector
 
 from ..core import EPS, EditOp, face_winding, finish, gather
 
@@ -58,6 +59,57 @@ def _pair_points(la, lb, uv):
     return a, b
 
 
+def _weld_all(pairs, face_island, uv, bias):
+    """Make every stitched seam vertex coincide exactly.
+
+    The islands are only moved as a whole, so when their shapes differ (not clean
+    squares, or Align / Scale are off) the seam ends can still be apart. All UVs
+    that stitch edges tie together are snapped to one point: `bias` of the way from
+    the staying side to the moving side. Doing it for all pairs at once keeps a
+    vertex shared by several seams consistent. UVs of the same island that sit at
+    the same spot move along, so no island is torn."""
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] is not x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    stay, move = set(), set()
+    for la, lb in pairs:
+        na, nb = la.link_loop_next, lb.link_loop_next
+        same = lb.vert == la.vert
+        for sa, sb in ((la, lb if same else nb), (na, nb if same else lb)):
+            parent[find(sa)] = find(sb)
+            stay.add(sa)
+            move.add(sb)
+
+    sets = {}
+    for l in list(parent):
+        sets.setdefault(find(l), []).append(l)
+
+    def mean(loops):
+        return sum((l[uv].uv for l in loops), Vector((0.0, 0.0))) / len(loops)
+
+    target_of = {}
+    for loops in sets.values():
+        a = [l for l in loops if l in stay]
+        b = [l for l in loops if l in move]
+        pa, pb = (mean(a) if a else None), (mean(b) if b else None)
+        target = pa.lerp(pb, bias) if pa is not None and pb is not None else (pa or pb)
+        if all((l[uv].uv - target).length < EPS for l in loops):
+            continue
+        for l in loops:
+            island = face_island.get(l.face)
+            for c in l.vert.link_loops:
+                if face_island.get(c.face) is island and (c[uv].uv - l[uv].uv).length < 1e-4:
+                    target_of[c] = target
+    for l, target in target_of.items():
+        l[uv].uv = target
+
+
 class UVED_OT_stitch_selected(EditOp, Operator):
     bl_idname = "uved.stitch_selected"
     bl_label = "Stitch Selected"
@@ -68,7 +120,7 @@ class UVED_OT_stitch_selected(EditOp, Operator):
     def execute(self, context):
         s = context.scene.uved
         objs = gather(context)
-        stitched = skipped = 0
+        stitched = 0
         for o in objs:
             uv = o.uv
             isl = o.islands()
@@ -128,11 +180,14 @@ class UVED_OT_stitch_selected(EditOp, Operator):
 
             w = s.stitch_bias
             al, sc = s.stitch_align, s.stitch_scale
+            weld_pairs = []
             for g in groups.values():
                 ia, ib, edges = g["stay"], g["move"], g["edges"]
+                weld_pairs.extend(edges)
                 if cluster[id(ia)] is cluster[id(ib)]:
-                    # closing a loop of islands would tear an earlier stitch
-                    skipped += len(edges)
+                    # already one piece (a loop of islands): do not move anything
+                    # again, the weld below closes the seam
+                    stitched += len(edges)
                     continue
                 A, B = points(edges)
                 if all((a - b).length < EPS for a, b in zip(A, B)):
@@ -156,12 +211,10 @@ class UVED_OT_stitch_selected(EditOp, Operator):
                     move(ib, _fit_fn(B, A, al, sc))
                 merge(ia, ib)
                 stitched += len(edges)
+            _weld_all(weld_pairs, face_island, uv, w)
         finish(objs)
         if not stitched:
             self.report({'WARNING'}, "Select UV edges that have a matching edge on another island")
             return {'CANCELLED'}
-        msg = f"Stitched {stitched} edge(s)"
-        if skipped:
-            msg += f", skipped {skipped} that would close a loop of islands"
-        self.report({'INFO'}, msg)
+        self.report({'INFO'}, f"Stitched {stitched} edge(s)")
         return {'FINISHED'}
