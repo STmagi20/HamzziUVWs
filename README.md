@@ -7,11 +7,11 @@
 
 ## 설치
 
-1. [Releases](https://github.com/STmagi20/HamzziUVWs/releases)에서 최신 `uv_edit_toolkit.zip`을 받습니다. 압축은 풀지 않습니다.
+1. 이 페이지 위쪽의 초록색 **Code** 버튼 → **Download ZIP**으로 받습니다. 압축은 풀지 않습니다.
 2. Blender에서 Edit → Preferences → Get Extensions를 엽니다.
 3. 오른쪽 위 화살표 메뉴에서 Install from Disk를 고르고 받은 zip을 선택합니다.
 
-GitHub의 "Code → Download ZIP"으로 받은 파일은 설치되지 않습니다. 반드시 Releases의 zip을 쓰세요.
+업데이트할 때도 같은 방법으로 새 zip을 받아 다시 설치하면 됩니다.
 
 ## 사용
 
@@ -44,10 +44,10 @@ GitHub의 "Code → Download ZIP"으로 받은 파일은 설치되지 않습니�
 
 ## 개발
 
-설치용 zip은 저장소에 포함하지 않습니다. 직접 만들려면:
+저장소 최상위가 곧 애드온 폴더입니다(`blender_manifest.toml`, `__init__.py`). 로컬에서 설치용 zip을 만들려면:
 
 ```bash
-python build_zip.py
+git archive --format=zip --prefix=uv_edit_toolkit/ -o uv_edit_toolkit.zip HEAD
 ```
 
 ## 라이선스

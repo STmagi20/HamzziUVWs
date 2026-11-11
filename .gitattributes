@@ -1,0 +1,3 @@
+# left out of "Download ZIP" archives
+.gitattributes export-ignore
+.gitignore export-ignore
