@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+
+id = "uv_edit_toolkit"
+version = "1.2.2"
+name = "UV Edit Toolkit"
+tagline = "Align, distribute, orient, scale and straighten existing UVs"
+maintainer = "StudyingHamzzi"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
