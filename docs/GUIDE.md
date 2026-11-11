@@ -9,7 +9,8 @@ HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 아일�
 3. [공통 규칙](#공통-규칙)
 4. [패널별 사용법](#패널별-사용법)
    - [Align Islands](#align-islands)
-   - [Distribute / Tile](#distribute--tile)
+   - [Distribute / Sort](#distribute--sort)
+   - [Tile / Pack](#tile--pack)
    - [Transform](#transform)
    - [Texel Density](#texel-density)
    - [UV Vertices](#uv-vertices)
@@ -90,7 +91,7 @@ UV 공간에서 엣지가 서로 붙어 있는 면들의 묶음입니다. 3D에�
 
 아일랜드 하나를 타일 한가운데에 놓으려면 UV Tile 기준으로 2번째와 5번째 버튼을 차례로 누릅니다.
 
-### Distribute / Tile
+### Distribute / Sort
 
 **Distribute U / V**는 아일랜드를 가로(U) 또는 세로(V)로 늘어놓습니다. 두 개 이상이 대상이어야 합니다. 현재 위치 순서대로 놓이며, 맨 앞 아일랜드는 움직이지 않습니다.
 
@@ -101,19 +102,49 @@ UV 공간에서 엣지가 서로 붙어 있는 면들의 묶음입니다. 3D에�
 
 Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격을 원하면 8 ÷ 1024 ≈ 0.0078을 적습니다. 음수를 적으면 겹치게 놓습니다.
 
+**Sort U / Sort V**는 아일랜드를 **3D 공간에서의 위치 순서**대로 한 줄(U) 또는 한 열(V)에 나란히 놓습니다. 3D 모델에서 가까운 부분끼리 UV에서도 이웃하게 하고 싶을 때 씁니다. 두 개 이상이 대상이어야 합니다.
+
+| 설정 | 동작 |
+|---|---|
+| X / Y / Z | 어느 축의 3D 위치를 기준으로 순서를 정할지 고릅니다. 작은 값이 먼저(왼쪽 또는 아래)입니다. |
+| 오른쪽 ↔ 버튼 | 켜면 순서를 거꾸로 합니다. |
+| Sort U | 가로 한 줄로 놓습니다. 아래쪽 가장자리를 맞춥니다. |
+| Sort V | 세로 한 줄로 놓습니다. 왼쪽 가장자리를 맞춥니다. |
+
+- 순서는 아일랜드에 속한 면들의 중심을 월드 좌표로 평균 낸 위치로 정합니다. 오브젝트를 옮기거나 돌려 두었어도 화면에 보이는 위치가 기준이고, 여러 오브젝트를 함께 편집하면 오브젝트가 달라도 한 줄로 섞어서 놓습니다.
+- 간격은 Distribute와 같은 설정을 씁니다. Equal Gaps는 처음 아일랜드들이 차지하던 폭 안에서 간격을 고르게 나누되 겹치지는 않고, Fixed Gap은 Gap 값만큼 띄웁니다.
+- 아일랜드의 크기는 그대로이고 회전하지 않습니다. 한 줄에 다 넣다 보면 타일 밖으로 나갈 수 있으니, 타일 안에 담으려면 Pack을 쓰세요.
+
+### Tile / Pack
+
+위쪽의 **U, V**는 아래 두 기능이 함께 쓰는 타일 번호입니다. 설정은 해당 버튼 바로 위에 있습니다. 기본값은 U 0, V 0(UV 에디터에 보이는 기본 사각형)입니다.
+
+| U, V | 위치 |
+|---|---|
+| 0, 0 | 기본 0–1 사각형 |
+| 1, 0 | 기본 사각형 오른쪽 옆 |
+| 0, 1 | 기본 사각형 위 |
+
+정리했는데 아일랜드가 사각형 바깥에 있다면 U, V가 0, 0인지 먼저 확인하세요.
+
 **Move to Tile**은 아일랜드를 U, V에 적은 UDIM 타일로 옮깁니다. 타일 안에서의 위치는 유지됩니다.
 
 - U 0, V 0이 기본 0–1 타일(1001)입니다. U 1, V 0은 1002, U 0, V 1은 1011입니다.
 - 아일랜드가 지금 어느 타일에 있는지는 중심 위치로 판단합니다.
 
-**Pack**(Pack into Tile)은 흩어진 아일랜드를 U, V에 적은 타일 안에 줄 맞춰 자동으로 배치합니다. 타일의 왼쪽 아래부터 오른쪽으로 채우고, 줄이 차면 위로 올라갑니다.
+**Pack into Tile**은 흩어진 아일랜드를 U, V에 적은 타일 안에 줄 맞춰 자동으로 배치합니다. 타일의 왼쪽 아래부터 오른쪽으로 채우고, 줄이 차면 위로 올라갑니다.
 
 | 설정 | 동작 |
 |---|---|
-| Margin | 아일랜드 사이와 타일 테두리에 남길 간격입니다. UV 단위이며 0이면 서로 맞붙습니다. |
+| Margin | 아일랜드 사이와 타일 테두리 네 면에 남길 간격입니다. UV 단위(1 = 타일 한 칸)이고 0이면 서로 맞붙습니다. 최대 0.25입니다. |
 | Scale to Fit (켬) | 타일을 가장 크게 채우도록 모든 아일랜드를 같은 배율로 키우거나 줄입니다. |
 | Scale to Fit (끔) | 크기는 그대로 두고 위치만 옮깁니다. 타일에 다 들어가지 않으면 경고를 내고 아무것도 바꾸지 않습니다. |
 
+- **Margin과 Scale to Fit의 관계**: Margin은 Pack 전용 설정이고, Scale to Fit은 그 간격을 지키면서 아일랜드를 어떻게 넣을지 정합니다.
+  - 켠 경우: 아일랜드 크기를 바꿔서라도 항상 Margin을 지킵니다. 사용할 수 있는 영역이 `1 − 2×Margin`이라, Margin이 클수록 아일랜드가 작아집니다(0.25면 타일 가운데 절반 영역만 씁니다).
+  - 끈 경우: 크기는 건드리지 않으므로 Margin 때문에 모자라면 경고만 내고 아무것도 바꾸지 않습니다.
+  - 켠 상태에서도 Margin이 너무 커서 간격만으로 타일이 가득 차면(예: Margin 0.25에 아일랜드 10개) 경고를 냅니다. 이때는 Margin을 줄이세요.
+  - 1024px 텍스처에서 8px 간격이면 Margin은 약 0.008입니다. 보통 0.005~0.02면 충분합니다.
 - 모든 아일랜드에 같은 배율을 쓰므로 아일랜드끼리의 텍셀 밀도 비율은 그대로입니다.
 - 아일랜드를 회전하지 않습니다. 비스듬한 아일랜드는 먼저 Auto H / Auto V로 세워 두면 빈틈이 줄어듭니다.
 - 키가 큰 아일랜드부터 놓고, 높이가 같으면 지금 놓인 왼쪽에서 오른쪽 순서를 따릅니다.
@@ -274,7 +305,7 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 1. 선택을 모두 해제합니다. 보이는 아일랜드 전체가 대상이 됩니다.
 2. Transform에서 **Auto H**를 눌러 아일랜드를 반듯하게 세웁니다.
 3. Texel Density에서 Texture Size를 적고 **Equalize**를 눌러 밀도를 통일합니다.
-4. Distribute / Tile에서 Margin을 적고 **Pack into Tile**을 눌러 타일 안에 줄 맞춰 배치합니다.
+4. Tile / Pack에서 Margin을 적고 **Pack into Tile**을 눌러 타일 안에 줄 맞춰 배치합니다.
 5. 일부만 따로 손보려면 아일랜드를 골라 Align Islands와 **Distribute U / V**로 다듬습니다.
 
 ### 갈라진 seam 붙이기
@@ -301,7 +332,7 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 ### UDIM 타일로 나누기
 
 1. 옮길 아일랜드를 선택합니다.
-2. Distribute / Tile에서 U, V에 타일 번호를 적습니다.
+2. Tile / Pack에서 U, V에 타일 번호를 적습니다.
 3. **Move to Tile**을 누릅니다.
 
 ## 3ds Max 사용자를 위한 대응표
@@ -311,7 +342,7 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 | Stitch Selected (Bias, Align Clusters, Scale Clusters) | Stitch 패널 |
 | 선택 엣지의 짝을 파란색으로 표시 | Connected Edges 패널 |
 | Relax | Unstretch 패널 (브러시 없음, 선택 영역에 한 번에 적용) |
-| Align / Space 버튼 | Align Islands, Distribute / Tile, UV Vertices 패널 |
+| Align / Space 버튼 | Align Islands, Distribute / Sort, UV Vertices 패널 |
 | Rescale Elements | Texel Density의 Equalize |
 
 ## 경고 메시지와 문제 해결
@@ -320,7 +351,8 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 |---|---|
 | No UV islands found | 대상이 될 아일랜드가 없습니다. Sync가 꺼져 있다면 3D 뷰포트에서 면을 선택합니다. |
 | Select at least two islands | 분배는 아일랜드가 두 개 이상 있어야 합니다. |
-| The islands do not fit in one tile - enable Scale to Fit or lower the margin | Pack에서 아일랜드가 타일보다 큽니다. Scale to Fit을 켜거나 Margin을 줄입니다. |
+| The islands do not fit in one tile - enable Scale to Fit or lower the margin | Scale to Fit이 꺼진 상태에서 아일랜드가 타일에 다 들어가지 않습니다. 켜거나 Margin을 줄입니다. |
+| The margin is too large for this many islands - lower the margin | Scale to Fit이 켜져 있어도 Margin만으로 타일이 가득 찹니다. Margin을 줄입니다. |
 | Select a UV edge inside the island | To Edge에 쓸 엣지를 선택합니다. |
 | No measurable islands | 면적이 0인 아일랜드뿐입니다. UV가 한 점에 모여 있는지 확인합니다. |
 | Target (px/m) must be above zero | Target에 0보다 큰 값을 적습니다. |

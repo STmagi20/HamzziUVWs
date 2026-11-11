@@ -42,6 +42,14 @@ class UVED_Settings(PropertyGroup):
         items=[('EQUAL', "Equal Gaps", "Even gaps between the outermost islands"),
                ('FIXED', "Fixed Gap", "Use the gap value below")])
     gap: FloatProperty(name="Gap", default=0.01, min=-1.0, max=1.0, precision=4)
+    sort_axis: EnumProperty(
+        name="Order By", default='X',
+        items=[('X', "X", "Order the islands by their X position in 3D space"),
+               ('Y', "Y", "Order the islands by their Y position in 3D space"),
+               ('Z', "Z", "Order the islands by their Z position in 3D space")])
+    sort_reverse: BoolProperty(
+        name="Reverse", default=False,
+        description="Reverse the order (highest 3D position first)")
     tile_u: IntProperty(name="U", default=0)
     tile_v: IntProperty(name="V", default=0)
     pack_margin: FloatProperty(

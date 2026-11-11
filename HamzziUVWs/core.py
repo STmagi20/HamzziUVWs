@@ -7,6 +7,7 @@ import math
 
 import bmesh
 import numpy as np
+from mathutils import Vector
 
 EPS = 1e-5
 
@@ -137,6 +138,11 @@ class Island:
         m = self.obj.ob.matrix_world.to_3x3()
         s = abs(m.determinant()) ** (1 / 3)
         return sum(f.calc_area() for f in self.faces) * s * s
+
+    def center3d(self):
+        """Average face centre of the island in world space."""
+        c = sum((f.calc_center_median() for f in self.faces), Vector((0.0, 0.0, 0.0))) / len(self.faces)
+        return self.obj.ob.matrix_world @ c
 
     def density(self, size):
         a3, auv = self.area3d(), self.uv_area()

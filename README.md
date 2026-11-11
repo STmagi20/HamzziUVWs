@@ -23,7 +23,8 @@
 | 패널 | 기능 |
 |---|---|
 | Align Islands | 아일랜드를 좌·우·상·하·중앙으로 정렬 (선택 영역 또는 0–1 타일 기준) |
-| Distribute / Tile | 간격 균등·고정 분배, UDIM 타일 이동, 타일 안 자동 배치 |
+| Distribute / Sort | 간격 균등·고정 분배, 3D 위치 순서로 나란히 정렬(Sort) |
+| Tile / Pack | UDIM 타일 이동, 타일 안 자동 배치(Margin, Scale to Fit) |
 | Transform | 90°·180°·임의 각도 회전, 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, 아일랜드별 U·V 배율 |
 | Texel Density | 밀도 측정, 목표값 적용, 평균으로 통일, 활성 면 기준 맞춤 |
 | UV Vertices | 선택한 UV 정점 정렬(엣지 펴기)과 균등 분배 |

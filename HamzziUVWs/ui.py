@@ -39,14 +39,23 @@ def _ui_distribute(layout, s):
     _op(r, "uved.distribute_islands", "Distribute V", axis='V')
     layout.separator()
     r = layout.row(align=True)
+    r.prop(s, "sort_axis", expand=True)
+    r.prop(s, "sort_reverse", text="", icon='ARROW_LEFTRIGHT', toggle=True)
+    r = layout.row(align=True)
+    _op(r, "uved.sort_islands", "Sort U", axis='U')
+    _op(r, "uved.sort_islands", "Sort V", axis='V')
+
+
+def _ui_tile(layout, s):
+    r = layout.row(align=True)
     r.prop(s, "tile_u")
     r.prop(s, "tile_v")
-    r = layout.row(align=True)
-    r.operator("uved.move_to_tile", text="Move to Tile")
-    r.operator("uved.pack_to_tile", text="Pack")
+    layout.operator("uved.move_to_tile", text="Move to Tile")
+    layout.separator()
     r = layout.row(align=True)
     r.prop(s, "pack_margin")
     r.prop(s, "pack_fit", toggle=True)
+    layout.operator("uved.pack_to_tile", text="Pack into Tile", icon='MOD_ARRAY')
 
 
 def _ui_rotate(layout, s):
@@ -149,7 +158,8 @@ def _ui_about(layout, s):
 _SECTIONS = (
     ("title", ADDON_NAME, _ui_title, {'HIDE_HEADER'}),
     ("align", "Align Islands", _ui_align),
-    ("distribute", "Distribute / Tile", _ui_distribute),
+    ("distribute", "Distribute / Sort", _ui_distribute),
+    ("tile", "Tile / Pack", _ui_tile),
     ("rotate", "Transform", _ui_rotate),
     ("density", "Texel Density", _ui_density),
     ("vertices", "UV Vertices", _ui_vertices),

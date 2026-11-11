@@ -31,7 +31,7 @@ from .operators import density, elements, islands, relax, stitch
 
 classes = (
     properties.UVED_Settings,
-    islands.UVED_OT_align_islands, islands.UVED_OT_distribute_islands, islands.UVED_OT_move_to_tile,
+    islands.UVED_OT_align_islands, islands.UVED_OT_distribute_islands, islands.UVED_OT_move_to_tile, islands.UVED_OT_sort_islands,
     islands.UVED_OT_pack_to_tile,
     islands.UVED_OT_scale_islands, islands.UVED_OT_transform_islands,
     islands.UVED_OT_auto_orient, islands.UVED_OT_orient_to_edge,

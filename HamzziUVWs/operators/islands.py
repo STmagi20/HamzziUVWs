@@ -94,6 +94,44 @@ class UVED_OT_distribute_islands(EditOp, Operator):
         return {'FINISHED'}
 
 
+class UVED_OT_sort_islands(EditOp, Operator):
+    bl_idname = "uved.sort_islands"
+    bl_label = "Sort Islands"
+    bl_description = ("Line the selected islands up side by side, in the order of their position "
+                      "in 3D space along the chosen axis. Islands keep their size and are not rotated")
+
+    axis: EnumProperty(items=[('U', "U", "Place the islands in a row, left to right"),
+                              ('V', "V", "Place the islands in a column, bottom to top")])
+
+    def execute(self, context):
+        s = context.scene.uved
+        objs, isl = targets(context)
+        if len(isl) < 2:
+            self.report({'WARNING'}, "Select at least two islands")
+            return {'CANCELLED'}
+        k = 0 if self.axis == 'U' else 1          # direction of the line
+        ax = {'X': 0, 'Y': 1, 'Z': 2}[s.sort_axis]
+        order = sorted(isl, key=lambda i: (round(i.center3d()[ax], 5), i.bounds()[k]))
+        if s.sort_reverse:
+            order.reverse()
+        box = group_bounds(isl)
+        start, base = box[k], box[1 - k]          # first island and the common edge
+        size = [i.bounds() for i in order]
+        widths = [b[k + 2] - b[k] for b in size]
+        if s.gap_mode == 'FIXED':
+            gap = s.gap
+        else:
+            # keep the width of the group, but never let the islands overlap
+            gap = max(((box[k + 2] - box[k]) - sum(widths)) / (len(order) - 1), 0.0)
+        pos = start
+        for i, b, w in zip(order, size, widths):
+            along, across = pos - b[k], base - b[1 - k]
+            i.translate(along, across) if k == 0 else i.translate(across, along)
+            pos += w + gap
+        finish(objs)
+        return {'FINISHED'}
+
+
 class UVED_OT_move_to_tile(EditOp, Operator):
     bl_idname = "uved.move_to_tile"
     bl_label = "Move to Tile"
@@ -156,8 +194,12 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
         if s.pack_fit:
             room = 1.0 - 2 * m
             hi = min(room / max(w for w, _ in sizes), room / max(h for _, h in sizes))
+            # a single row is a quick lower bound; when the gaps alone fill it, fall back
+            # to a tiny scale (several rows, or a grid of gaps, still fit)
             lo = min(hi, (room - (len(sizes) - 1) * m) / sum(w for w, _ in sizes))
-            if lo > 0 and _shelf_layout(sizes, lo, m) is not None:
+            if lo <= 0 or _shelf_layout(sizes, lo, m) is None:
+                lo = 1e-6
+            if _shelf_layout(sizes, lo, m) is not None:
                 for _ in range(40):
                     mid = (lo + hi) / 2
                     if _shelf_layout(sizes, mid, m) is None:
@@ -168,8 +210,11 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
         else:
             pos = _shelf_layout(sizes, 1.0, m)
         if pos is None:
-            self.report({'WARNING'}, "The islands do not fit in one tile - enable Scale to Fit "
-                                     "or lower the margin")
+            if s.pack_fit:
+                self.report({'WARNING'}, "The margin is too large for this many islands - lower the margin")
+            else:
+                self.report({'WARNING'}, "The islands do not fit in one tile - enable Scale to Fit "
+                                         "or lower the margin")
             return {'CANCELLED'}
 
         for (i, x0, y0, _, _), (px, py) in zip(info, pos):
