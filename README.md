@@ -49,3 +49,9 @@ GitHub의 "Code → Download ZIP"으로 받은 파일은 설치되지 않습니�
 ```bash
 python build_zip.py
 ```
+
+## 라이선스
+
+GPL-3.0-or-later. 전문은 [LICENSE](LICENSE)에 있습니다.
+
+Copyright (C) 2026 StudyingHamzzi

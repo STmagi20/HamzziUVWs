@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 StudyingHamzzi
+
 """UV Edit Toolkit - edit UVs that are already unwrapped.
 
 Island tools : align, distribute, move to tile, texel density, scale,
