@@ -3,6 +3,8 @@
 
 """Unstretch: relax the selected UVs and toggle the stretch overlay."""
 
+import traceback
+
 import bmesh
 import bpy
 import numpy as np
@@ -114,6 +116,131 @@ def _run_unwrap(context, method):
         return bpy.ops.uv.unwrap(method=method, fill_holes=True, margin=0.0)
 
 
+def _make_plans(objs, pin_boundary):
+    """One plan per island that holds selected UV vertices.
+
+    Returns (plans, closed, outline_only): `closed` counts islands that cannot be
+    solved, `outline_only` is True when only outline vertices were selected."""
+    plans = []
+    outline_only = False
+    closed = 0
+    for o in objs:
+        for isl in o.islands():
+            inner = set(isl.joined)
+
+            def on_outline(l):
+                # a corner touches the island outline when either of its two edges
+                # is not joined to a neighbour face inside the same island
+                return l.edge not in inner or l.link_loop_prev.edge not in inner
+
+            selected = {(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
+                        if o.selected(l)}
+            if selected and not any(on_outline(l) for f in isl.faces for l in f.loops):
+                # every edge is joined in UV space (a folded, closed island): the
+                # unwrap has no boundary to solve from and would fail
+                closed += 1
+                continue
+            free = ({(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
+                     if (f.index, k) in selected and not on_outline(l)}
+                    if pin_boundary else selected)
+            if not free:
+                outline_only = outline_only or bool(selected)
+                continue
+            pts = np.array([tuple(l[o.uv].uv) for f in isl.faces for l in f.loops])
+            fixed = sum(1 for f in isl.faces for k, l in enumerate(f.loops)
+                        if (f.index, k) not in free or l[o.uv].pin_uv)
+            plans.append({
+                "o": o, "faces": [f.index for f in isl.faces],
+                "edges": [e.index for e in isl.joined], "free": free,
+                "old": pts, "fixed": fixed,
+                "wind": sum(face_winding(f, o.uv) for f in isl.faces),
+            })
+    return plans, closed, outline_only
+
+
+def _prepare_unwrap(objs, plans):
+    """Set up selection, pins and seams so the unwrap solves only the planned islands."""
+    for o in objs:
+        # Face mode, so that selecting the faces of the islands being relaxed
+        # cannot pull in a neighbouring face whose corners are all selected
+        # (vertex mode would): that face would be solved without any pins.
+        o.bm.select_mode = {'FACE'}
+        if o.uv_sync:
+            # the unwrap below must follow the mesh selection we set up
+            o.bm.uv_select_sync_valid = False
+        for v in o.bm.verts:
+            v.select_set(False)
+        for e in o.bm.edges:
+            e.select_set(False)
+        for f in o.bm.faces:
+            f.select_set(False)
+    for p in plans:
+        bm, uv = p["o"].bm, p["o"].uv
+        for fi in p["faces"]:
+            f = bm.faces[fi]
+            f.select_set(True)
+            for k, l in enumerate(f.loops):
+                if (fi, k) not in p["free"]:
+                    l[uv].pin_uv = True      # must not move
+        for ei in p["edges"]:
+            bm.edges[ei].seam = False        # keep the island in one piece
+    for o in objs:
+        # Edges that are cut in UV space must be seams for the unwrap, even when
+        # the mesh has no seam there (a default UV sphere, for example). Without
+        # them a closed mesh has no boundary and the solve fails. Seams are put
+        # back from the saved state afterwards.
+        sel = {fi for p in plans if p["o"] is o for fi in p["faces"]}
+        joined = {ei for p in plans if p["o"] is o for ei in p["edges"]}
+        for e in o.bm.edges:
+            if e.index in joined:
+                continue
+            if sum(1 for f in e.link_faces if f.index in sel) >= 2:
+                e.seam = True
+    for o in objs:
+        o.bm.select_flush_mode()
+        o.update()
+
+
+def _apply_result(objs, plans, amount):
+    """Blend the solved UVs of the free vertices in. Returns the number of islands
+    whose solve failed (those keep their old UVs)."""
+    for o in objs:
+        o.bm = bmesh.from_edit_mesh(o.ob.data)
+        o.uv = o.bm.loops.layers.uv.active
+        o.bm.faces.ensure_lookup_table()
+    failed = 0
+    for p in plans:
+        bm, uv = p["o"].bm, p["o"].uv
+        loops = [(fi, k, l) for fi in p["faces"] for k, l in enumerate(bm.faces[fi].loops)]
+        new = np.array([tuple(l[uv].uv) for _, _, l in loops])
+        spread = new.max(axis=0) - new.min(axis=0)
+        if not np.isfinite(new).all() or spread.max() < 1e-9:
+            new = p["old"]      # the solve failed: keep the UVs as they were
+            failed += 1
+        elif p["fixed"] < 2:
+            # nothing was pinned: put the island back where it was
+            if sum(face_winding(bm.faces[fi], uv) for fi in p["faces"]) * p["wind"] < 0:
+                new = new * (-1.0, 1.0)
+            new = _fit_back(p["old"], new)
+        for (fi, k, l), a, b in zip(loops, p["old"], new):
+            if (fi, k) in p["free"]:
+                l[uv].uv = tuple(a + (b - a) * amount)
+    return failed
+
+
+def _restore_all(objs, saved):
+    """Put every object's selection, seams and pins back. An error on one object
+    does not stop the others; returns the names of objects that failed."""
+    failed = []
+    for o in objs:
+        try:
+            _restore_mesh_state(o, saved[o.ob.name])
+        except Exception:
+            traceback.print_exc()
+            failed.append(o.ob.name)
+    return failed
+
+
 class UVED_OT_relax(EditOp, Operator):
     bl_idname = "uved.relax"
     bl_label = "Relax / Unstretch"
@@ -126,41 +253,7 @@ class UVED_OT_relax(EditOp, Operator):
         objs = gather(context)
         saved = {o.ob.name: _save_mesh_state(o) for o in objs}
 
-        # one plan per island that contains selected UV vertices
-        plans = []
-        outline_only = False
-        closed = 0
-        for o in objs:
-            for isl in o.islands():
-                inner = set(isl.joined)
-
-                def on_outline(l):
-                    # a corner touches the island outline when either of its two edges
-                    # is not joined to a neighbour face inside the same island
-                    return l.edge not in inner or l.link_loop_prev.edge not in inner
-
-                selected = {(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
-                            if o.selected(l)}
-                if selected and not any(on_outline(l) for f in isl.faces for l in f.loops):
-                    # every edge is joined in UV space (a folded, closed island): the
-                    # unwrap has no boundary to solve from and would fail
-                    closed += 1
-                    continue
-                free =({(f.index, k) for f in isl.faces for k, l in enumerate(f.loops)
-                         if (f.index, k) in selected and not on_outline(l)}
-                        if s.relax_pin_boundary else selected)
-                if not free:
-                    outline_only = outline_only or bool(selected)
-                    continue
-                pts = np.array([tuple(l[o.uv].uv) for f in isl.faces for l in f.loops])
-                fixed = sum(1 for f in isl.faces for k, l in enumerate(f.loops)
-                            if (f.index, k) not in free or l[o.uv].pin_uv)
-                plans.append({
-                    "o": o, "faces": [f.index for f in isl.faces],
-                    "edges": [e.index for e in isl.joined], "free": free,
-                    "old": pts, "fixed": fixed,
-                    "wind": sum(face_winding(f, o.uv) for f in isl.faces),
-                })
+        plans, closed, outline_only = _make_plans(objs, s.relax_pin_boundary)
         if not plans:
             if closed:
                 self.report({'WARNING'}, f"Relax could not solve {closed} island(s): they have no "
@@ -174,85 +267,24 @@ class UVED_OT_relax(EditOp, Operator):
 
         sync0 = ts.use_uv_select_sync
         ok = False
-        failed = 0
         try:
-            for o in objs:
-                # Face mode, so that selecting the faces of the islands being relaxed
-                # cannot pull in a neighbouring face whose corners are all selected
-                # (vertex mode would): that face would be solved without any pins.
-                o.bm.select_mode = {'FACE'}
-                if o.uv_sync:
-                    # the unwrap below must follow the mesh selection we set up
-                    o.bm.uv_select_sync_valid = False
-                for v in o.bm.verts:
-                    v.select_set(False)
-                for e in o.bm.edges:
-                    e.select_set(False)
-                for f in o.bm.faces:
-                    f.select_set(False)
-            for p in plans:
-                o, bm, uv = p["o"], p["o"].bm, p["o"].uv
-                for fi in p["faces"]:
-                    f = bm.faces[fi]
-                    f.select_set(True)
-                    for k, l in enumerate(f.loops):
-                        if (fi, k) not in p["free"]:
-                            l[uv].pin_uv = True      # must not move
-                for ei in p["edges"]:
-                    bm.edges[ei].seam = False        # keep the island in one piece
-            for o in objs:
-                # Edges that are cut in UV space must be seams for the unwrap, even when
-                # the mesh has no seam there (a default UV sphere, for example). Without
-                # them a closed mesh has no boundary and the solve fails. Seams are put
-                # back from the saved state afterwards.
-                sel = {fi for p in plans if p["o"] is o for fi in p["faces"]}
-                joined = {ei for p in plans if p["o"] is o for ei in p["edges"]}
-                for e in o.bm.edges:
-                    if e.index in joined:
-                        continue
-                    if sum(1 for f in e.link_faces if f.index in sel) >= 2:
-                        e.seam = True
-            for o in objs:
-                o.bm.select_flush_mode()
-                o.update()
-
+            _prepare_unwrap(objs, plans)
             ts.use_uv_select_sync = True
             res = _run_unwrap(context, s.relax_method)
             if 'FINISHED' not in res:
                 self.report({'WARNING'}, "Relax failed")
                 return {'CANCELLED'}
-
-            for o in objs:
-                o.bm = bmesh.from_edit_mesh(o.ob.data)
-                o.uv = o.bm.loops.layers.uv.active
-                o.bm.faces.ensure_lookup_table()
-            for p in plans:
-                o, bm, uv = p["o"], p["o"].bm, p["o"].uv
-                loops = [(fi, k, l) for fi in p["faces"] for k, l in enumerate(bm.faces[fi].loops)]
-                new = np.array([tuple(l[uv].uv) for _, _, l in loops])
-                spread = new.max(axis=0) - new.min(axis=0)
-                if not np.isfinite(new).all() or spread.max() < 1e-9:
-                    new = p["old"]      # the solve failed: keep the UVs as they were
-                    failed += 1
-                elif p["fixed"] < 2:
-                    # nothing was pinned: put the island back where it was
-                    if sum(face_winding(bm.faces[fi], uv) for fi in p["faces"]) * p["wind"] < 0:
-                        new = new * (-1.0, 1.0)
-                    new = _fit_back(p["old"], new)
-                amount = s.relax_blend
-                for (fi, k, l), a, b in zip(loops, p["old"], new):
-                    if (fi, k) in p["free"]:
-                        l[uv].uv = tuple(a + (b - a) * amount)
+            failed = _apply_result(objs, plans, s.relax_blend)
             ok = failed < len(plans)
             if failed or closed:
                 self.report({'WARNING'}, f"Relax could not solve {failed + closed} island(s); "
                                          "they were left unchanged")
-            if not ok:
-                return {'CANCELLED'}
         finally:
             ts.use_uv_select_sync = sync0
-            for o in objs:
-                _restore_mesh_state(o, saved[o.ob.name])
+            broken = _restore_all(objs, saved)
+            if broken:
+                self.report({'ERROR'}, "Could not restore selection / seams / pins on "
+                                       f"{', '.join(broken)} - press Ctrl+Z")
         return {'FINISHED'} if ok else {'CANCELLED'}
 
 

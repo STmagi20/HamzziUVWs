@@ -3,6 +3,8 @@
 
 """Connected-edge display in the UV editor (like the blue shared edges in 3ds Max)."""
 
+import traceback
+
 import bmesh
 import bpy
 import gpu
@@ -12,6 +14,7 @@ from .core import EPS, UVObject, edit_objects
 
 
 _handle = None
+_error_logged = False
 
 
 def _uv_select_mode(ts):
@@ -108,6 +111,7 @@ def draw_link_batches(region, lines, points, color, width):
 
 
 def _draw():
+    global _error_logged
     context = bpy.context
     try:
         if context.mode != 'EDIT_MESH':
@@ -126,7 +130,11 @@ def _draw():
             return
         draw_link_batches(context.region, geo[0], geo[1], tuple(s.link_color), s.link_width)
     except Exception:       # a draw callback must never raise
-        pass
+        if not _error_logged:
+            # print the first failure to the system console so it can be found;
+            # later ones are dropped, the callback runs on every redraw
+            _error_logged = True
+            traceback.print_exc()
 
 
 def register():

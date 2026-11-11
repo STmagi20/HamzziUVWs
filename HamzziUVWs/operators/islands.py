@@ -9,7 +9,7 @@ import numpy as np
 from bpy.props import EnumProperty
 from bpy.types import Operator
 
-from ..core import EPS, EditOp, finish, group_bounds, targets
+from ..core import EPS, EditOp, finish, group_bounds, targets, targets_or_warn
 
 
 class UVED_OT_align_islands(EditOp, Operator):
@@ -33,9 +33,8 @@ class UVED_OT_align_islands(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         x0, y0, x1, y1 = group_bounds(isl)
         if s.align_relative == 'TILE':
@@ -70,9 +69,8 @@ class UVED_OT_distribute_islands(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
-        if len(isl) < 2:
-            self.report({'WARNING'}, "Select at least two islands")
+        objs, isl = targets_or_warn(self, context, 2, "Select at least two islands")
+        if not isl:
             return {'CANCELLED'}
         k = 0 if self.axis == 'U' else 1
         info = []
@@ -105,9 +103,8 @@ class UVED_OT_sort_islands(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
-        if len(isl) < 2:
-            self.report({'WARNING'}, "Select at least two islands")
+        objs, isl = targets_or_warn(self, context, 2, "Select at least two islands")
+        if not isl:
             return {'CANCELLED'}
         k = 0 if self.axis == 'U' else 1          # direction of the line
         ax = {'X': 0, 'Y': 1, 'Z': 2}[s.sort_axis]
@@ -139,9 +136,8 @@ class UVED_OT_move_to_tile(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
@@ -178,9 +174,8 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         m = s.pack_margin
         info = []
@@ -233,9 +228,8 @@ class UVED_OT_scale_islands(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
@@ -265,9 +259,8 @@ class UVED_OT_transform_islands(EditOp, Operator):
 
     def execute(self, context):
         s = context.scene.uved
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
@@ -299,9 +292,8 @@ class UVED_OT_auto_orient(EditOp, Operator):
                ('VERTICAL', "Vertical", "Longest side along V")])
 
     def execute(self, context):
-        objs, isl = targets(context)
+        objs, isl = targets_or_warn(self, context)
         if not isl:
-            self.report({'WARNING'}, "No UV islands found")
             return {'CANCELLED'}
         angles = np.radians(np.arange(0.0, 90.0, 0.5))
         for i in isl:

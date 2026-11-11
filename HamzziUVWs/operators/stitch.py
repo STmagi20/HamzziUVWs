@@ -9,7 +9,7 @@ import numpy as np
 from bpy.types import Operator
 from mathutils import Vector
 
-from ..core import EPS, EditOp, face_winding, finish, gather
+from ..core import EPS, EditOp, UnionFind, face_winding, finish, gather
 
 
 def _fit_fn(src, dst, align, scale):
@@ -68,33 +68,21 @@ def _weld_all(pairs, face_island, uv, bias):
     the staying side to the moving side. Doing it for all pairs at once keeps a
     vertex shared by several seams consistent. UVs of the same island that sit at
     the same spot move along, so no island is torn."""
-    parent = {}
-
-    def find(x):
-        parent.setdefault(x, x)
-        while parent[x] is not x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
+    sets = UnionFind()
     stay, move = set(), set()
     for la, lb in pairs:
         na, nb = la.link_loop_next, lb.link_loop_next
         same = lb.vert == la.vert
         for sa, sb in ((la, lb if same else nb), (na, nb if same else lb)):
-            parent[find(sa)] = find(sb)
+            sets.union(sa, sb)
             stay.add(sa)
             move.add(sb)
-
-    sets = {}
-    for l in list(parent):
-        sets.setdefault(find(l), []).append(l)
 
     def mean(loops):
         return sum((l[uv].uv for l in loops), Vector((0.0, 0.0))) / len(loops)
 
     target_of = {}
-    for loops in sets.values():
+    for loops in sets.groups().values():
         a = [l for l in loops if l in stay]
         b = [l for l in loops if l in move]
         pa, pb = (mean(a) if a else None), (mean(b) if b else None)
@@ -110,6 +98,104 @@ def _weld_all(pairs, face_island, uv, bias):
         l[uv].uv = target
 
 
+def _find_pairs(o, isl, face_island):
+    """(stay loop, move loop, stay island, move island) for each selected UV edge that
+    has a matching edge on another island. With both sides selected (UV sync on), the
+    island holding the active face is the one that stays."""
+    active = o.bm.faces.active
+    seen = set()
+    pairs = []
+    for ia in isl:
+        for l in ia.loops:
+            n = l.link_loop_next
+            if not (o.selected(l) and o.selected(n)) or l.edge in seen:
+                continue
+            others = [f for f in l.edge.link_faces
+                      if f is not l.face and f in face_island
+                      and face_island[f] is not ia]
+            if not others:
+                continue
+            seen.add(l.edge)
+            fb = others[0]
+            ib = face_island[fb]
+            lb = next(x for x in fb.loops if x.edge == l.edge)
+            both = o.selected(lb) and o.selected(lb.link_loop_next)
+            if both and active is not None and active in ib.faces:
+                pairs.append((lb, l, ib, ia))
+            else:
+                pairs.append((l, lb, ia, ib))
+    return pairs
+
+
+def _group_pairs(pairs):
+    """All edges between the same two islands, to be solved together."""
+    groups = {}
+    for la, lb, ia, ib in pairs:
+        g = groups.setdefault(frozenset((id(ia), id(ib))),
+                              {"stay": ia, "move": ib, "edges": []})
+        if g["stay"] is not ia:
+            la, lb = lb, la
+        g["edges"].append((la, lb))
+    return list(groups.values())
+
+
+def _solve_groups(groups, isl, uv, bias, align, scale):
+    """Move the islands of each group onto each other. Returns the number of
+    stitched edges and the (stay, move) loop pairs to weld."""
+    # islands that were already stitched move together from then on
+    cluster = {id(i): [i] for i in isl}
+
+    def move(island, fn):
+        if fn is not None:
+            for i in cluster[id(island)]:
+                i.apply(fn)
+
+    def merge(a, b):
+        ca, cb = cluster[id(a)], cluster[id(b)]
+        if ca is not cb:
+            ca.extend(cb)
+            for i in cb:
+                cluster[id(i)] = ca
+
+    def points(edges):
+        pts = [_pair_points(la, lb, uv) for la, lb in edges]
+        return ([p for a, _ in pts for p in a], [p for _, b in pts for p in b])
+
+    stitched = 0
+    weld_pairs = []
+    for g in groups:
+        ia, ib, edges = g["stay"], g["move"], g["edges"]
+        weld_pairs.extend(edges)
+        stitched += len(edges)
+        if cluster[id(ia)] is cluster[id(ib)]:
+            # already one piece (a loop of islands): do not move anything
+            # again, the weld closes the seam
+            continue
+        A, B = points(edges)
+        if all((a - b).length < EPS for a, b in zip(A, B)):
+            # an earlier group already brought these edges together
+            merge(ia, ib)
+            continue
+        # a face that is mirrored in UV space has to be flipped to unfold correctly
+        la, lb = edges[0]
+        if (face_winding(la.face, uv) * face_winding(lb.face, uv)) < 0:
+            if bias >= 1.0:
+                move(ia, _mirror_fn(A[0], A[1]))
+            else:
+                move(ib, _mirror_fn(B[0], B[1]))
+            A, B = points(edges)
+        if bias >= 1.0:
+            move(ia, _fit_fn(A, B, align, scale))
+        elif bias <= 0.0:
+            move(ib, _fit_fn(B, A, align, scale))
+        else:
+            move(ia, _fit_fn(A, [a.lerp(b, bias) for a, b in zip(A, B)], align, scale))
+            A, B = points(edges)
+            move(ib, _fit_fn(B, A, align, scale))
+        merge(ia, ib)
+    return stitched, weld_pairs
+
+
 class UVED_OT_stitch_selected(EditOp, Operator):
     bl_idname = "uved.stitch_selected"
     bl_label = "Stitch Selected"
@@ -122,98 +208,13 @@ class UVED_OT_stitch_selected(EditOp, Operator):
         objs = gather(context)
         stitched = 0
         for o in objs:
-            uv = o.uv
             isl = o.islands()
             face_island = {f: i for i in isl for f in i.faces}
-            active = o.bm.faces.active
-            seen = set()
-            pairs = []
-            for ia in isl:
-                for l in ia.loops:
-                    n = l.link_loop_next
-                    if not (o.selected(l) and o.selected(n)) or l.edge in seen:
-                        continue
-                    others = [f for f in l.edge.link_faces
-                              if f is not l.face and f in face_island
-                              and face_island[f] is not ia]
-                    if not others:
-                        continue
-                    seen.add(l.edge)
-                    fb = others[0]
-                    ib = face_island[fb]
-                    lb = next(x for x in fb.loops if x.edge == l.edge)
-                    both = o.selected(lb) and o.selected(lb.link_loop_next)
-                    if both and active is not None and active in ib.faces:
-                        # the island holding the active face is the one that stays
-                        la, lb, ia_, ib_ = lb, l, ib, ia
-                    else:
-                        la, lb, ia_, ib_ = l, lb, ia, ib
-                    pairs.append((la, lb, ia_, ib_))
-
-            # all edges between the same two islands are solved together
-            groups = {}
-            for la, lb, ia, ib in pairs:
-                g = groups.setdefault(frozenset((id(ia), id(ib))),
-                                      {"stay": ia, "move": ib, "edges": []})
-                if g["stay"] is not ia:
-                    la, lb = lb, la
-                g["edges"].append((la, lb))
-
-            # islands that were already stitched move together from then on
-            cluster = {id(i): [i] for i in isl}
-
-            def move(island, fn):
-                if fn is not None:
-                    for i in cluster[id(island)]:
-                        i.apply(fn)
-
-            def merge(a, b):
-                ca, cb = cluster[id(a)], cluster[id(b)]
-                if ca is not cb:
-                    ca.extend(cb)
-                    for i in cb:
-                        cluster[id(i)] = ca
-
-            def points(edges):
-                pts = [_pair_points(la, lb, uv) for la, lb in edges]
-                return ([p for a, _ in pts for p in a], [p for _, b in pts for p in b])
-
-            w = s.stitch_bias
-            al, sc = s.stitch_align, s.stitch_scale
-            weld_pairs = []
-            for g in groups.values():
-                ia, ib, edges = g["stay"], g["move"], g["edges"]
-                weld_pairs.extend(edges)
-                if cluster[id(ia)] is cluster[id(ib)]:
-                    # already one piece (a loop of islands): do not move anything
-                    # again, the weld below closes the seam
-                    stitched += len(edges)
-                    continue
-                A, B = points(edges)
-                if all((a - b).length < EPS for a, b in zip(A, B)):
-                    # an earlier group already brought these edges together
-                    merge(ia, ib)
-                    stitched += len(edges)
-                    continue
-                # a face that is mirrored in UV space has to be flipped to unfold correctly
-                la, lb = edges[0]
-                if (face_winding(la.face, uv) * face_winding(lb.face, uv)) < 0:
-                    if w >= 1.0:
-                        move(ia, _mirror_fn(A[0], A[1]))
-                    else:
-                        move(ib, _mirror_fn(B[0], B[1]))
-                    A, B = points(edges)
-                if w >= 1.0:
-                    move(ia, _fit_fn(A, B, al, sc))
-                elif w <= 0.0:
-                    move(ib, _fit_fn(B, A, al, sc))
-                else:
-                    move(ia, _fit_fn(A, [a.lerp(b, w) for a, b in zip(A, B)], al, sc))
-                    A, B = points(edges)
-                    move(ib, _fit_fn(B, A, al, sc))
-                merge(ia, ib)
-                stitched += len(edges)
-            _weld_all(weld_pairs, face_island, uv, w)
+            groups = _group_pairs(_find_pairs(o, isl, face_island))
+            n, weld_pairs = _solve_groups(groups, isl, o.uv, s.stitch_bias,
+                                          s.stitch_align, s.stitch_scale)
+            _weld_all(weld_pairs, face_island, o.uv, s.stitch_bias)
+            stitched += n
         finish(objs)
         if not stitched:
             self.report({'WARNING'}, "Select UV edges that have a matching edge on another island")

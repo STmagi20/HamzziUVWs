@@ -56,13 +56,9 @@ class UVObject:
         uv = self.uv
         faces = [f for f in self.bm.faces if self.visible(f)]
         idx = {f: i for i, f in enumerate(faces)}
-        parent = list(range(len(faces)))
-
-        def find(i):
-            while parent[i] != i:
-                parent[i] = parent[parent[i]]
-                i = parent[i]
-            return i
+        sets = UnionFind()
+        for i in range(len(faces)):
+            sets.find(i)        # every face is a set of its own, in face order
 
         joined = []
         for e in self.bm.edges:
@@ -74,16 +70,12 @@ class UVObject:
                 other = _edge_uvs(f, e, uv)
                 if base and all((base[v] - other[v]).length < EPS for v in base):
                     joined.append((e, lf[0]))
-                    a, b = find(idx[lf[0]]), find(idx[f])
-                    if a != b:
-                        parent[a] = b
-        groups = {}
-        for i, f in enumerate(faces):
-            groups.setdefault(find(i), []).append(f)
+                    sets.union(idx[lf[0]], idx[f])
         edges = {}
         for e, f in joined:
-            edges.setdefault(find(idx[f]), []).append(e)
-        return [Island(self, g, edges.get(r, [])) for r, g in groups.items()]
+            edges.setdefault(sets.find(idx[f]), []).append(e)
+        return [Island(self, [faces[i] for i in g], edges.get(r, []))
+                for r, g in sets.groups().items()]
 
 
 class Island:
@@ -127,12 +119,7 @@ class Island:
 
     def uv_area(self):
         uv = self.obj.uv
-        total = 0.0
-        for f in self.faces:
-            p = [l[uv].uv for l in f.loops]
-            total += abs(sum(p[i].x * p[(i + 1) % len(p)].y - p[(i + 1) % len(p)].x * p[i].y
-                             for i in range(len(p)))) / 2
-        return total
+        return sum(abs(face_winding(f, uv)) for f in self.faces) / 2
 
     def area3d(self):
         m = self.obj.ob.matrix_world.to_3x3()
@@ -163,6 +150,16 @@ def targets(context):
     return objs, (sel or isl)
 
 
+def targets_or_warn(op, context, minimum=1, message="No UV islands found"):
+    """targets(), but when fewer than `minimum` islands are found, report `message`
+    on the operator and return an empty island list."""
+    objs, isl = targets(context)
+    if len(isl) < minimum:
+        op.report({'WARNING'}, message)
+        return objs, []
+    return objs, isl
+
+
 def finish(objs):
     for o in objs:
         o.update()
@@ -183,6 +180,34 @@ class EditOp:
 
 
 def face_winding(face, uv):
+    """Twice the signed UV area of the face (negative when it is mirrored)."""
     p = [l[uv].uv for l in face.loops]
     return sum(p[i].x * p[(i + 1) % len(p)].y - p[(i + 1) % len(p)].x * p[i].y
                for i in range(len(p)))
+
+
+class UnionFind:
+    """Disjoint sets of hashable items; an item becomes a set of its own on first use."""
+
+    def __init__(self):
+        self.parent = {}
+
+    def find(self, x):
+        parent = self.parent
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra != rb:
+            self.parent[ra] = rb
+
+    def groups(self):
+        """{root: [items]}, in the order the items were first seen."""
+        out = {}
+        for x in list(self.parent):
+            out.setdefault(self.find(x), []).append(x)
+        return out
