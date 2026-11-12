@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/images/Ham_Body_UV.png" alt="HamzziUVWs" width="240">
+  <img src="docs/images/Ham_Body_UV.png" alt="Hamzzi UV Toolkit" width="240">
 </p>
 
-<h1 align="center">HamzziUVWs</h1>
+<h1 align="center">Hamzzi UV Toolkit</h1>
 
 <p align="center">이미 펼친 UV를 정리하는 Blender 애드온</p>
 
@@ -14,11 +14,11 @@
 
 ## 화면
 
-메시를 Edit Mode로 두면 3D 뷰포트와 UV 에디터의 사이드바(N 키)에 **HamzziUVWs** 탭이 나타납니다.
+메시를 Edit Mode로 두면 3D 뷰포트와 UV 에디터의 사이드바(N 키)에 **Hamzzi UV Toolkit** 탭이 나타납니다.
 
 <table>
   <tr>
-    <td valign="top"><img src="docs/images/sidebar.png" alt="HamzziUVWs 사이드바" width="250"></td>
+    <td valign="top"><img src="docs/images/sidebar.png" alt="Hamzzi UV Toolkit 사이드바" width="250"></td>
     <td valign="top"><img src="docs/images/pack.png" alt="Pack into Tile 전후" width="620"><br><sub>Pack into Tile: 흩어진 아일랜드가 한 번에 타일 안에 정리됩니다.</sub></td>
   </tr>
 </table>
@@ -39,12 +39,12 @@
 
 ## 설치
 
-1. 저장소의 **Releases**에서 `HamzziUVWs.zip`을 받습니다. 압축은 풀지 않습니다.
+1. 저장소의 **Releases**에서 `HamzziUVToolkit.zip`을 받습니다. 압축은 풀지 않습니다.
 2. Blender에서 Edit → Preferences → Get Extensions를 엽니다.
 3. 오른쪽 위 화살표 메뉴에서 **Install from Disk**를 고르고 받은 zip을 선택합니다.
 4. 설치가 끝나면 애드온이 켜져 있는지 확인합니다.
 
-> 초록색 Code 버튼의 Download ZIP은 저장소 전체를 담고 있어 그대로 설치할 수 없습니다. 애드온 본체는 `HamzziUVWs/` 폴더 안에 있습니다.
+> 초록색 Code 버튼의 Download ZIP은 저장소 전체를 담고 있어 그대로 설치할 수 없습니다. 애드온 본체는 `HamzziUVToolkit/` 폴더 안에 있습니다.
 
 <table>
   <tr>
@@ -56,7 +56,7 @@
 ## 빠른 시작
 
 1. 메시를 선택하고 Tab 키로 Edit Mode에 들어갑니다.
-2. UV 에디터를 열고 N 키로 사이드바를 연 뒤 **HamzziUVWs** 탭을 누릅니다.
+2. UV 에디터를 열고 N 키로 사이드바를 연 뒤 **Hamzzi UV Toolkit** 탭을 누릅니다.
 3. 아일랜드 도구는 선택한 아일랜드에 적용되고, 아무것도 선택하지 않으면 보이는 아일랜드 전체에 적용됩니다. 실행한 도구는 Ctrl+Z로 되돌릴 수 있습니다.
 
 예를 들어 흩어진 아일랜드를 정리하려면 **Tile / Pack**에서 U 0, V 0을 확인하고 **Pack into Tile**을 누릅니다. 모든 도구의 사용법과 작업 예시는 [사용 가이드](docs/GUIDE.md)에 있습니다.
@@ -72,19 +72,19 @@
 
 ## 개발
 
-애드온에 쓰이는 파일은 모두 `HamzziUVWs/` 폴더에 있습니다.
+애드온에 쓰이는 파일은 모두 `HamzziUVToolkit/` 폴더에 있습니다.
 
 | 경로 | 내용 |
 |---|---|
-| `HamzziUVWs/__init__.py` | 등록·해제 |
-| `HamzziUVWs/blender_manifest.toml` | 확장 정보와 버전 |
-| `HamzziUVWs/info.py` | 이름, 제작자, 버전 |
-| `HamzziUVWs/icons.py`, `HamzziUVWs/images/` | 패널 이름 앞의 작은 로고(`logo.png`)와 About의 전신 그림(`mascot.png`). 없어도 애드온은 동작합니다 |
-| `HamzziUVWs/core.py` | UV 데이터 접근: 편집 오브젝트, 선택 판정, 아일랜드 |
-| `HamzziUVWs/properties.py` | 패널에 보이는 설정값 |
-| `HamzziUVWs/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
-| `HamzziUVWs/overlay.py` | UV 에디터의 연결 엣지 표시 |
-| `HamzziUVWs/ui.py` | 사이드바 패널 |
+| `HamzziUVToolkit/__init__.py` | 등록·해제 |
+| `HamzziUVToolkit/blender_manifest.toml` | 확장 정보와 버전 |
+| `HamzziUVToolkit/info.py` | 이름, 제작자, 버전 |
+| `HamzziUVToolkit/icons.py`, `HamzziUVToolkit/images/` | 패널 이름 앞의 작은 로고(`logo.png`)와 About의 전신 그림(`mascot.png`). 없어도 애드온은 동작합니다 |
+| `HamzziUVToolkit/core.py` | UV 데이터 접근: 편집 오브젝트, 선택 판정, 아일랜드 |
+| `HamzziUVToolkit/properties.py` | 패널에 보이는 설정값 |
+| `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
+| `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지 표시 |
+| `HamzziUVToolkit/ui.py` | 사이드바 패널 |
 | `docs/GUIDE.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
 
 버전은 `blender_manifest.toml`에만 적습니다. 패널에 보이는 버전은 이 파일에서 읽어 옵니다.
@@ -92,7 +92,7 @@
 설치용 zip은 커밋한 뒤 아래 명령으로 만듭니다. zip 최상위에 `blender_manifest.toml`이 오도록 폴더 내용만 묶습니다.
 
 ```bash
-git archive --format=zip -o HamzziUVWs.zip HEAD:HamzziUVWs
+git archive --format=zip -o HamzziUVToolkit.zip HEAD:HamzziUVToolkit
 ```
 
 ## 라이선스

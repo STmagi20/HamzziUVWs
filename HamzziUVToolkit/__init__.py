@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 StudyingHamzzi
 
-"""HamzziUVWs - edit UVs that are already unwrapped.
+"""Hamzzi UV Toolkit - edit UVs that are already unwrapped.
 
 Island tools : align, distribute, move to tile, texel density, scale,
                rotate / flip, auto-orient, orient to edge.

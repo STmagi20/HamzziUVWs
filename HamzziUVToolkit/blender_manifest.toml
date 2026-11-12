@@ -1,8 +1,8 @@
 schema_version = "1.0.0"
 
-id = "uv_edit_toolkit"
+id = "hamzzi_uv_toolkit"
 version = "1.1.4"
-name = "HamzziUVWs"
+name = "Hamzzi UV Toolkit"
 tagline = "Align, sort, pack, stitch and relax existing UV islands"
 maintainer = "StudyingHamzzi"
 type = "add-on"

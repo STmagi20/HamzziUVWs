@@ -1,8 +1,8 @@
-# HamzziUVWs 사용 가이드
+# Hamzzi UV Toolkit 사용 가이드
 
-HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 사이드바 버튼으로 아일랜드 정렬과 배치, 이음선 붙이기, 늘어진 UV 풀기, 텍셀 밀도 맞추기를 할 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
+Hamzzi UV Toolkit은 이미 펼친 UV를 다듬는 Blender 애드온입니다. 사이드바 버튼으로 아일랜드 정렬과 배치, 이음선 붙이기, 늘어진 UV 풀기, 텍셀 밀도 맞추기를 할 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
 
-<p align="center"><img src="images/Ham_Body_UV_small.png" alt="HamzziUVWs" width="270"></p>
+<p align="center"><img src="images/Ham_Body_UV_small.png" alt="Hamzzi UV Toolkit" width="270"></p>
 
 ## 목차
 
@@ -28,10 +28,10 @@ HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 사이�
 
 Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래 버전에서는 실행해 보지 않았습니다.
 
-1. 저장소의 Releases에서 `HamzziUVWs.zip`을 받습니다. 압축은 풀지 않습니다.
+1. 저장소의 Releases에서 `HamzziUVToolkit.zip`을 받습니다. 압축은 풀지 않습니다.
 2. Blender에서 Edit → Preferences → Get Extensions를 엽니다.
 3. 오른쪽 위 화살표 메뉴에서 **Install from Disk**를 고르고 zip을 선택합니다.
-4. Add-ons 목록에서 HamzziUVWs가 켜져 있는지 확인합니다.
+4. Add-ons 목록에서 Hamzzi UV Toolkit이 켜져 있는지 확인합니다.
 
 업데이트할 때는 새 zip 파일을 설치해 주세요. 패널이 이전 모습이라면 Blender를 다시 시작합니다.
 
@@ -39,11 +39,11 @@ Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래
 
 1. 메시 오브젝트를 선택하고 Tab 키로 Edit Mode에 들어갑니다.
 2. 3D 뷰포트나 UV 에디터에서 N 키로 사이드바를 엽니다.
-3. **HamzziUVWs** 탭을 누릅니다.
+3. **Hamzzi UV Toolkit** 탭을 누릅니다.
 
 > 이 애드온은 이미 펼친 UV를 다듬는 도구입니다. UV 맵이 없는 메시에서는 경고가 나오고 아무것도 바뀌지 않으니, Blender에서 UV를 먼저 펼치세요(UV → Unwrap, Smart UV Project 등).
 
-<img src="images/sidebar.png" alt="HamzziUVWs 사이드바" width="260" align="right">
+<img src="images/sidebar.png" alt="Hamzzi UV Toolkit 사이드바" width="260" align="right">
 
 - 패널 제목을 누르면 접거나 펼 수 있습니다. Connected Edges와 About은 처음에 접혀 있습니다.
 - 패널은 Edit Mode에서만 보입니다. 3D 뷰포트와 UV 에디터 양쪽에 같은 패널이 있습니다. 결과를 바로 보려면 UV 에디터를 함께 열어 두는 것이 좋습니다.
@@ -407,7 +407,7 @@ Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래
 
 | 증상 | 확인할 것 |
 |---|---|
-| HamzziUVWs 탭이 없다 | 메시가 Edit Mode인지, 애드온이 Preferences에서 켜져 있는지 확인하세요. |
+| Hamzzi UV Toolkit 탭이 없다 | 메시가 Edit Mode인지, 애드온이 Preferences에서 켜져 있는지 확인하세요. |
 | 패널의 햄스터 그림이 안 보인다 | 설치용 zip의 `images` 폴더에 `logo.png`와 `mascot.png`가 들어 있는지 확인하세요. 그림이 없어도 기능은 동작합니다. |
 | 버튼이 회색이다 | Edit Mode의 메시 오브젝트가 있는지 확인하세요. Scale 버튼은 U, V 배율이 모두 1이면 비활성화됩니다. |
 | 선택한 것보다 많이 움직인다 | 아일랜드 도구는 정점 하나만 선택해도 그 정점이 속한 아일랜드 전체를 움직입니다. 선택이 없으면 보이는 아일랜드 전체에 적용됩니다. |

@@ -6,7 +6,7 @@
 import os
 import re
 
-ADDON_NAME = "HamzziUVWs"
+ADDON_NAME = "Hamzzi UV Toolkit"
 ADDON_AUTHOR = "StudyingHamzzi"
 
 
