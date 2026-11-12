@@ -141,17 +141,26 @@ def _ui_display(layout, s):
 
 def _ui_title(layout, s):
     logo = icons.logo_id()
-    if logo:
-        layout.template_icon(icon_value=logo, scale=icons.LOGO_SCALE)
     r = layout.row()
     r.alignment = 'CENTER'
-    r.label(text=f"{ADDON_NAME}  v{ADDON_VERSION}", icon='UV')
+    text = f"{ADDON_NAME}  v{ADDON_VERSION}"
+    if logo:
+        r.label(text=text, icon_value=logo)
+    else:
+        r.label(text=text, icon='UV')
 
 
 def _ui_about(layout, s):
-    c = layout.column(align=True)
+    mascot = icons.mascot_id()
+    if mascot:
+        split = layout.split(factor=0.74)
+        c = split.column(align=True)
+    else:
+        c = layout.column(align=True)
     c.label(text=f"버전: v{ADDON_VERSION}", icon='INFO')
     c.label(text=f"제작: {ADDON_AUTHOR}", icon='USER')
+    if mascot:
+        split.template_icon(icon_value=mascot, scale=icons.MASCOT_SCALE)
 
 
 # (key, panel title, draw function, panel options)
