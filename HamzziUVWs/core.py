@@ -3,6 +3,7 @@
 
 """UV data access shared by every tool: edit objects, selection and islands."""
 
+import functools
 import math
 
 import bmesh
@@ -30,7 +31,7 @@ class UVObject:
     def __init__(self, ob, sync, face_mode):
         self.ob = ob
         self.bm = bmesh.from_edit_mesh(ob.data)
-        self.uv = self.bm.loops.layers.uv.active or self.bm.loops.layers.uv.verify()
+        self.uv = self.bm.loops.layers.uv.active      # never created here: gather() skips meshes without one
         self.sync = sync
         self.face_mode = face_mode
         # Blender 5.x keeps a separate per-UV selection even with UV sync on
@@ -136,11 +137,20 @@ class Island:
         return math.sqrt(auv / a3) * size if a3 > 1e-12 and auv > 1e-12 else 0.0
 
 
+def has_uv(ob):
+    return bmesh.from_edit_mesh(ob.data).loops.layers.uv.active is not None
+
+
+def objects_without_uv(context):
+    """Names of the edit-mode meshes that have no UV map (nothing was unwrapped yet)."""
+    return [o.name for o in edit_objects(context) if not has_uv(o)]
+
+
 def gather(context):
     ts = context.tool_settings
     m = ts.mesh_select_mode
     face_mode = bool(m[2]) and not m[0] and not m[1]
-    return [UVObject(o, ts.use_uv_select_sync, face_mode) for o in edit_objects(context)]
+    return [UVObject(o, ts.use_uv_select_sync, face_mode) for o in edit_objects(context) if has_uv(o)]
 
 
 def targets(context):
@@ -171,8 +181,30 @@ def group_bounds(islands):
             max(x[2] for x in b), max(x[3] for x in b))
 
 
+def _needs_uv_map(run):
+    """Wrap an operator's execute: no UV map means nothing was unwrapped, so say so and
+    stop instead of silently adding an empty UV map to the mesh."""
+    @functools.wraps(run)
+    def execute(self, context):
+        lacking = objects_without_uv(context)
+        if lacking:
+            names = ", ".join(lacking)
+            if len(lacking) == len(edit_objects(context)):
+                self.report({'WARNING'}, f"No UV map on {names} - unwrap the mesh first (UV > Unwrap)")
+                return {'CANCELLED'}
+            self.report({'WARNING'}, f"Skipped objects without a UV map: {names}")
+        return run(self, context)
+    return execute
+
+
 class EditOp:
     bl_options = {'REGISTER', 'UNDO'}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        run = cls.__dict__.get("execute")
+        if run is not None:
+            cls.execute = _needs_uv_map(run)
 
     @classmethod
     def poll(cls, context):
