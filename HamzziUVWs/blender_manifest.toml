@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 id = "uv_edit_toolkit"
 version = "1.1.3"
 name = "HamzziUVWs"
-tagline = "Align, distribute, orient, scale and straighten existing UVs"
+tagline = "Align, sort, pack, stitch and relax existing UV islands"
 maintainer = "StudyingHamzzi"
 type = "add-on"
 

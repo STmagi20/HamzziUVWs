@@ -1,13 +1,16 @@
 # HamzziUVWs 사용 가이드
 
-HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 아일랜드 정렬과 배치, 텍셀 밀도 맞추기, seam 붙이기, 늘어짐 풀기를 사이드바 버튼으로 처리합니다. UV를 새로 펼치는 기능은 없습니다.
+HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 아일랜드 정렬과 배치, 이음선 붙이기, 늘어짐 풀기, 텍셀 밀도 맞추기를 사이드바 버튼으로 처리합니다. UV를 새로 펼치는 기능은 없습니다.
+
+<p align="center"><img src="images/Ham_face_UV.png" alt="HamzziUVWs" width="120"></p>
 
 ## 목차
 
 1. [설치](#설치)
 2. [시작하기](#시작하기)
-3. [공통 규칙](#공통-규칙)
-4. [패널별 사용법](#패널별-사용법)
+3. [하고 싶은 일로 찾기](#하고-싶은-일로-찾기)
+4. [공통 규칙](#공통-규칙)
+5. [패널별 사용법](#패널별-사용법)
    - [Align Islands](#align-islands)
    - [Distribute / Sort](#distribute--sort)
    - [Tile / Pack](#tile--pack)
@@ -18,18 +21,18 @@ HamzziUVWs는 이미 펼친 UV를 다듬는 Blender 애드온입니다. 아일�
    - [Unstretch](#unstretch)
    - [Connected Edges](#connected-edges)
    - [About](#about)
-5. [작업 예시](#작업-예시)
-6. [3ds Max 사용자를 위한 대응표](#3ds-max-사용자를-위한-대응표)
-7. [경고 메시지와 문제 해결](#경고-메시지와-문제-해결)
-8. [알려진 한계](#알려진-한계)
+6. [작업 예시](#작업-예시)
+7. [3ds Max 사용자를 위한 대응표](#3ds-max-사용자를-위한-대응표)
+8. [경고 메시지와 문제 해결](#경고-메시지와-문제-해결)
+9. [알려진 한계](#알려진-한계)
 
 ## 설치
 
-Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했습니다. 그 이하 버전에서는 실행해 보지 않았습니다.
+Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래 버전에서는 실행해 보지 않았습니다.
 
-1. 릴리즈에서 `HamzziUVWs.zip`을 받습니다. 압축은 풀지 않습니다.
+1. 저장소의 Releases에서 `HamzziUVWs.zip`을 받습니다. 압축은 풀지 않습니다.
 2. Blender에서 Edit → Preferences → Get Extensions를 엽니다.
-3. 오른쪽 위 화살표 메뉴에서 Install from Disk를 고르고 zip을 선택합니다.
+3. 오른쪽 위 화살표 메뉴에서 **Install from Disk**를 고르고 zip을 선택합니다.
 4. Add-ons 목록에서 HamzziUVWs가 켜져 있는지 확인합니다.
 
 업데이트할 때는 새 zip 파일을 설치해 주세요. 패널이 이전 모습이라면 Blender를 다시 시작합니다.
@@ -40,9 +43,32 @@ Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했습니다. 그 
 2. 3D 뷰포트나 UV 에디터에서 N 키로 사이드바를 엽니다.
 3. **HamzziUVWs** 탭을 누릅니다.
 
-맨 위에 애드온 이름과 버전이 보이고, 그 아래에 도구 패널이 차례로 놓입니다. 패널 제목을 누르면 접거나 펼 수 있고(Connected Edges와 About은 처음에 접혀 있습니다), 제목 오른쪽 점 무늬를 끌면 순서를 바꿀 수 있습니다.
+<img src="images/sidebar.png" alt="HamzziUVWs 사이드바" width="260" align="right">
 
-패널은 Edit Mode에서만 보입니다. 3D 뷰포트와 UV 에디터 양쪽에 같은 패널이 있으므로 편한 쪽에서 쓰면 됩니다. 결과를 보려면 UV 에디터를 함께 열어 두는 편이 좋습니다.
+맨 위에 로고와 애드온 이름, 버전이 보이고 그 아래에 도구 패널이 차례로 놓입니다.
+
+- 패널 제목을 누르면 접거나 펼 수 있습니다. Connected Edges와 About은 처음에 접혀 있습니다.
+- 제목 오른쪽 점 무늬를 끌면 순서를 바꿀 수 있습니다.
+- 패널은 Edit Mode에서만 보입니다. 3D 뷰포트와 UV 에디터 양쪽에 같은 패널이 있으니 편한 쪽에서 쓰세요. 결과를 보려면 UV 에디터를 함께 열어 두는 편이 좋습니다.
+- 아이콘만 있는 버튼은 마우스를 올리면 설명이 나옵니다.
+
+<br clear="right">
+
+## 하고 싶은 일로 찾기
+
+| 하고 싶은 일 | 쓸 도구 |
+|---|---|
+| 아일랜드를 한쪽 가장자리나 가운데로 맞추기 | Align Islands |
+| 아일랜드 사이 간격을 고르게 하기 | Distribute / Sort의 Distribute U / V |
+| 3D 모델의 위치 순서대로 아일랜드를 줄 세우기 | Distribute / Sort의 Sort U / V |
+| 흩어진 아일랜드를 타일 안에 한 번에 정리하기 | Tile / Pack의 Pack into Tile |
+| 아일랜드를 다른 UDIM 타일로 옮기기 | Tile / Pack의 Move to Tile |
+| 회전하거나 뒤집기, 비스듬한 아일랜드 세우기 | Transform |
+| 아일랜드마다 다른 해상도를 똑같이 맞추기 | Texel Density |
+| 비뚤어진 UV 엣지를 일직선으로 펴기 | UV Vertices |
+| 갈라진 이음선을 붙이기 | Stitch |
+| 늘어지거나 찌그러진 UV 풀기 | Unstretch |
+| 선택한 엣지의 짝이 어디에 있는지 보기 | Connected Edges |
 
 ## 공통 규칙
 
@@ -58,31 +84,36 @@ UV 공간에서 엣지가 서로 붙어 있는 면들의 묶음입니다. 3D에�
 
 **UV Sync**
 
-- 켜든 끄든 동작합니다.
-- Sync를 끄면 3D 뷰포트에서 선택한 면만 UV 에디터에 보이고, 그 면들만 대상이 됩니다. 숨긴 면은 어느 경우에도 대상에서 빠집니다.
-- Blender 5.x에서는 Sync를 켠 채 UV 에디터에서 정점을 클릭하면 그 UV 하나만 선택됩니다. 다른 아일랜드에 있는 같은 정점은 선택되지 않습니다. 애드온은 UV 에디터에 보이는 선택 그대로 따릅니다.
+UV 에디터 헤더의 화살표 두 개 모양 버튼(UV Sync Selection)입니다. 켜든 끄든 동작합니다.
+
+- 끄면 3D 뷰포트에서 선택한 면만 UV 에디터에 보이고, 그 면들만 대상이 됩니다.
+- 켜면 메시 전체의 UV가 보입니다. Blender 5.x에서는 UV 에디터에서 정점을 클릭하면 그 UV 하나만 선택됩니다. 다른 아일랜드에 있는 같은 정점은 선택되지 않으며, 애드온은 UV 에디터에 보이는 선택을 그대로 따릅니다.
+- 숨긴 면은 어느 경우에도 대상에서 빠집니다.
 
 **그 밖에**
 
 - 여러 오브젝트를 함께 Edit Mode로 두면 한 번에 처리합니다.
 - 모든 도구는 Ctrl+Z로 되돌릴 수 있습니다.
 - 회전, 뒤집기, 크기 변경은 아일랜드마다 자기 중심(경계 상자의 가운데)을 기준으로 합니다.
+- 거리와 간격은 UV 단위입니다. 1은 타일 한 칸입니다. 1024px 텍스처에서 8px은 8 ÷ 1024 ≈ 0.008입니다.
 
 ## 패널별 사용법
 
 ### Align Islands
 
+<img src="images/panel_align.png" alt="Align Islands" width="260">
+
 아일랜드를 한쪽 가장자리나 가운데로 맞춥니다. 모양은 바뀌지 않고 위치만 움직입니다.
 
-1. 위의 목록에서 기준을 고릅니다.
-2. 방향 버튼을 누릅니다.
+1. 위의 토글에서 기준을 고릅니다.
+2. 아이콘 버튼을 누릅니다.
 
 | 기준 | 동작 |
 |---|---|
 | Selection | 대상 아일랜드 전체를 감싸는 범위의 가장자리에 맞춥니다. |
 | UV Tile | 그 범위의 중심이 놓인 0–1 타일의 가장자리에 맞춥니다. |
 
-아이콘 버튼 6개가 한 줄에 놓입니다. 마우스를 올리면 설명이 나옵니다.
+아이콘 버튼 6개가 한 줄에 놓입니다.
 
 | 순서 | 동작 |
 |---|---|
@@ -93,16 +124,18 @@ UV 공간에서 엣지가 서로 붙어 있는 면들의 묶음입니다. 3D에�
 
 ### Distribute / Sort
 
+<img src="images/panel_distribute.png" alt="Distribute / Sort" width="260">
+
 **Distribute U / V**는 아일랜드를 가로(U) 또는 세로(V)로 늘어놓습니다. 두 개 이상이 대상이어야 합니다. 현재 위치 순서대로 놓이며, 맨 앞 아일랜드는 움직이지 않습니다.
 
 | 설정 | 동작 |
 |---|---|
 | Equal Gaps | 양 끝은 그대로 두고 사이 간격을 똑같이 나눕니다. 전체 폭은 변하지 않습니다. |
-| Fixed Gap | 맨 앞 아일랜드부터 Gap 값만큼 띄워 차례로 놓습니다. |
-
-Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격을 원하면 8 ÷ 1024 ≈ 0.0078을 적습니다. 음수를 적으면 겹치게 놓습니다.
+| Fixed Gap | 맨 앞 아일랜드부터 Gap 값만큼 띄워 차례로 놓습니다. Gap은 Fixed Gap을 고르면 나타나며 기본값은 0.01입니다. 음수를 적으면 겹치게 놓습니다. |
 
 **Sort U / Sort V**는 아일랜드를 **3D 공간에서의 위치 순서**대로 한 줄(U) 또는 한 열(V)에 나란히 놓습니다. 3D 모델에서 가까운 부분끼리 UV에서도 이웃하게 하고 싶을 때 씁니다. 두 개 이상이 대상이어야 합니다.
+
+<img src="images/sort.png" alt="Sort U 전후" width="720">
 
 | 설정 | 동작 |
 |---|---|
@@ -112,12 +145,14 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 | Sort V | 세로 한 줄로 놓습니다. 왼쪽 가장자리를 맞춥니다. |
 
 - 순서는 아일랜드에 속한 면들의 중심을 월드 좌표로 평균 낸 위치로 정합니다. 오브젝트를 옮기거나 돌려 두었어도 화면에 보이는 위치가 기준이고, 여러 오브젝트를 함께 편집하면 오브젝트가 달라도 한 줄로 섞어서 놓습니다.
-- 간격은 Distribute와 같은 설정을 씁니다. Equal Gaps는 처음 아일랜드들이 차지하던 폭 안에서 간격을 고르게 나누되 겹치지는 않고, Fixed Gap은 Gap 값만큼 띄웁니다.
-- 아일랜드의 크기는 그대로이고 회전하지 않습니다. 한 줄에 다 넣다 보면 타일 밖으로 나갈 수 있으니, 타일 안에 담으려면 Pack을 쓰세요.
+- 간격은 Distribute와 같은 설정(Equal Gaps / Fixed Gap)을 씁니다. Equal Gaps는 처음 아일랜드들이 차지하던 폭 안에서 간격을 고르게 나누되 겹치지는 않고, Fixed Gap은 Gap 값만큼 띄웁니다.
+- 아일랜드의 크기는 그대로이고 회전하지 않습니다. 한 줄에 다 넣다 보면 타일 밖으로 나갈 수 있으니, 타일 안에 담으려면 Pack into Tile을 쓰세요.
 
 ### Tile / Pack
 
-위쪽의 **U, V**는 아래 두 기능이 함께 쓰는 타일 번호입니다. 설정은 해당 버튼 바로 위에 있습니다. 기본값은 U 0, V 0(UV 에디터에 보이는 기본 사각형)입니다.
+<img src="images/panel_tile.png" alt="Tile / Pack" width="260">
+
+위쪽의 **U, V**는 아래 두 기능이 함께 쓰는 타일 번호입니다. 기본값은 U 0, V 0(UV 에디터에 보이는 기본 사각형)입니다.
 
 | U, V | 위치 |
 |---|---|
@@ -134,23 +169,28 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 **Pack into Tile**은 흩어진 아일랜드를 U, V에 적은 타일 안에 줄 맞춰 자동으로 배치합니다. 타일의 왼쪽 아래부터 오른쪽으로 채우고, 줄이 차면 위로 올라갑니다.
 
+<img src="images/pack.png" alt="Pack into Tile 전후" width="720">
+
+설정은 버튼 바로 위에 있습니다.
+
 | 설정 | 동작 |
 |---|---|
-| Margin | 아일랜드 사이와 타일 테두리 네 면에 남길 간격입니다. UV 단위(1 = 타일 한 칸)이고 0이면 서로 맞붙습니다. 최대 0.25입니다. |
+| Margin | 아일랜드 사이와 타일 테두리 네 면에 남길 간격입니다. UV 단위이고 0이면 서로 맞붙습니다. 최대 0.25입니다. |
 | Scale to Fit (켬) | 타일을 가장 크게 채우도록 모든 아일랜드를 같은 배율로 키우거나 줄입니다. |
 | Scale to Fit (끔) | 크기는 그대로 두고 위치만 옮깁니다. 타일에 다 들어가지 않으면 경고를 내고 아무것도 바꾸지 않습니다. |
 
 - **Margin과 Scale to Fit의 관계**: Margin은 Pack 전용 설정이고, Scale to Fit은 그 간격을 지키면서 아일랜드를 어떻게 넣을지 정합니다.
   - 켠 경우: 아일랜드 크기를 바꿔서라도 항상 Margin을 지킵니다. 사용할 수 있는 영역이 `1 − 2×Margin`이라, Margin이 클수록 아일랜드가 작아집니다(0.25면 타일 가운데 절반 영역만 씁니다).
   - 끈 경우: 크기는 건드리지 않으므로 Margin 때문에 모자라면 경고만 내고 아무것도 바꾸지 않습니다.
-  - 켠 상태에서도 Margin이 너무 커서 간격만으로 타일이 가득 차면(예: Margin 0.25에 아일랜드 10개) 경고를 냅니다. 이때는 Margin을 줄이세요.
-  - 1024px 텍스처에서 8px 간격이면 Margin은 약 0.008입니다. 보통 0.005~0.02면 충분합니다.
+  - 켠 상태에서도 Margin이 너무 커서 간격만으로 타일이 가득 차면(예: Margin 0.25에 아일랜드 10개) 경고를 냅니다. 이때는 Margin을 줄이세요. 보통 0.005~0.02면 충분합니다.
 - 모든 아일랜드에 같은 배율을 쓰므로 아일랜드끼리의 텍셀 밀도 비율은 그대로입니다.
 - 아일랜드를 회전하지 않습니다. 비스듬한 아일랜드는 먼저 Auto H / Auto V로 세워 두면 빈틈이 줄어듭니다.
 - 키가 큰 아일랜드부터 놓고, 높이가 같으면 지금 놓인 왼쪽에서 오른쪽 순서를 따릅니다.
 - 아일랜드의 경계 상자를 기준으로 놓습니다. 모양이 복잡한 아일랜드를 빈틈없이 끼워 넣으려면 Blender의 Pack Islands가 더 촘촘합니다.
 
 ### Transform
+
+<img src="images/panel_rotate.png" alt="Transform" width="260">
 
 회전, 뒤집기, 방향 맞춤, 배율 조정을 한 패널에 모았습니다.
 
@@ -160,7 +200,7 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 | Flip H / Flip V | 좌우·상하 뒤집기 |
 | 각도 칸 + Rotate | 적은 각도만큼 회전(양수가 반시계 방향) |
 | Auto H / Auto V | 가장 작은 사각형에 들어가도록 돌린 뒤 긴 쪽을 가로(H) 또는 세로(V)로 놓습니다. |
-| To Edge (Orient to Edge) | 선택한 UV 엣지가 가장 가까운 가로·세로 축에 놓이도록 아일랜드를 돌립니다. |
+| To Edge | 선택한 UV 엣지가 가장 가까운 가로·세로 축에 놓이도록 아일랜드를 돌립니다. |
 
 - Auto H / V는 0.5° 간격으로 가장 작은 상자를 찾습니다. 비스듬히 놓인 아일랜드를 반듯하게 세울 때 씁니다.
 - To Edge는 아일랜드 안에서 기준이 될 엣지를 먼저 선택해야 합니다. 엣지를 여러 개 골랐다면 아일랜드마다 처음 찾은 엣지 하나를 기준으로 삼습니다.
@@ -175,6 +215,8 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 ### Texel Density
 
+<img src="images/panel_density.png" alt="Texel Density" width="260">
+
 텍셀 밀도는 3D 표면 1m에 텍스처 픽셀이 몇 개 들어가는지(px/m)입니다. 아일랜드마다 밀도가 같아야 텍스처 해상도가 고르게 보입니다.
 
 1. **Texture Size**에 텍스처 한 변의 픽셀 수를 적습니다.
@@ -185,7 +227,7 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 |---|---|
 | Apply | Target 값에 맞춥니다. |
 | Equalize | 대상 아일랜드들의 평균 밀도로 통일합니다. 전체 크기는 비슷하게 유지됩니다. |
-| Active (Match Active) | 활성 면(마지막에 클릭한 면)이 속한 아일랜드의 밀도에 맞춥니다. |
+| Active | 활성 면(마지막에 클릭한 면)이 속한 아일랜드의 밀도에 맞춥니다. |
 
 측정 결과는 두 가지로 표시됩니다.
 
@@ -201,6 +243,8 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 ### UV Vertices
 
+<img src="images/panel_vertices.png" alt="UV Vertices" width="260">
+
 아일랜드가 아니라 선택한 UV 정점만 움직입니다. 비뚤어진 엣지를 일직선으로 펼 때 씁니다.
 
 | 버튼 | 동작 |
@@ -215,11 +259,15 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 ### Stitch
 
-선택한 UV 엣지를 seam 건너편 아일랜드의 같은 엣지에 붙입니다.
+<img src="images/panel_stitch.png" alt="Stitch" width="260">
+
+선택한 UV 엣지를 seam 건너편 아일랜드의 같은 엣지에 붙입니다. 3ds Max의 Stitch Selected와 같은 역할입니다.
 
 1. 붙이려는 UV 엣지를 선택합니다. 여러 개를 함께 선택해도 됩니다.
 2. Bias와 옵션을 정합니다.
 3. **Stitch Selected**를 누릅니다.
+
+<img src="images/stitch.png" alt="Stitch 전후" width="720">
 
 | 옵션 | 동작 |
 |---|---|
@@ -250,11 +298,15 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 ### Unstretch
 
+<img src="images/panel_unstretch.png" alt="Unstretch" width="260">
+
 선택한 UV 정점을 3D 형태에 맞게 다시 풀어 늘어짐을 줄입니다.
 
 1. 풀고 싶은 영역의 UV 정점을 선택합니다.
 2. Method와 Amount를 정합니다.
 3. **Relax / Unstretch**를 누릅니다.
+
+<img src="images/relax.png" alt="Relax 전후" width="720">
 
 | 설정 | 동작 |
 |---|---|
@@ -269,7 +321,7 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 - Pin Boundary를 끄고 아일랜드 전체를 선택했으며 고정된 정점이 없으면, 풀린 결과를 원래 위치·크기·방향에 가장 가깝게 맞춰 놓습니다.
 - 실행 후 선택, seam, 핀 상태는 실행 전으로 돌아옵니다.
 - UV에서만 갈라져 있고 메시에 seam 표시가 없는 경우(기본 UV 스피어 등)에도, 갈라진 곳을 경계로 삼아 풉니다. 이를 위해 실행하는 동안만 임시로 seam을 쓰고 끝나면 원래대로 돌려 놓습니다.
-- 풀기에 실패한 아일랜드는 원래 UV 그대로 두고 경고를 냅니다.
+- UV에 열린 경계가 하나도 없는 아일랜드(모든 엣지가 붙어 있는 닫힌 아일랜드)와 풀기에 실패한 아일랜드는 원래 UV 그대로 두고 경고를 냅니다.
 - 브러시가 아니라 한 번 누를 때 한 번 계산하는 방식입니다. 조금씩 풀고 싶으면 Amount를 낮춰 여러 번 누릅니다.
 
 구처럼 평평하게 펼 수 없는 형태는 어떻게 풀어도 왜곡이 남습니다. Angle Based는 각도 왜곡을 줄이는 방식이라, 면적 왜곡(Area)은 줄지 않거나 늘 수 있습니다. 결과는 **Show Stretch**의 Angle로 확인하세요.
@@ -278,7 +330,11 @@ Gap은 UV 단위입니다(1 = 타일 한 칸). 1024px 텍스처에서 8px 간격
 
 ### Connected Edges
 
+<img src="images/panel_display.png" alt="Connected Edges" width="260">
+
 UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어지는지 색으로 표시합니다. seam으로 갈라진 짝을 찾을 때 씁니다.
+
+<img src="images/connected.png" alt="Connected Edges 표시" width="520">
 
 | 설정 | 동작 |
 |---|---|
@@ -294,6 +350,8 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 
 ### About
 
+<img src="images/panel_about.png" alt="About" width="260">
+
 애드온 버전과 제작자를 보여 줍니다.
 
 ## 작업 예시
@@ -305,7 +363,7 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 1. 선택을 모두 해제합니다. 보이는 아일랜드 전체가 대상이 됩니다.
 2. Transform에서 **Auto H**를 눌러 아일랜드를 반듯하게 세웁니다.
 3. Texel Density에서 Texture Size를 적고 **Equalize**를 눌러 밀도를 통일합니다.
-4. Tile / Pack에서 Margin을 적고 **Pack into Tile**을 눌러 타일 안에 줄 맞춰 배치합니다.
+4. Tile / Pack에서 U 0, V 0을 확인하고 Margin을 적은 뒤 **Pack into Tile**을 눌러 타일 안에 줄 맞춰 배치합니다.
 5. 일부만 따로 손보려면 아일랜드를 골라 Align Islands와 **Distribute U / V**로 다듬습니다.
 
 ### 갈라진 seam 붙이기
@@ -317,10 +375,17 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 
 ### 비뚤어진 띠 모양 아일랜드 펴기
 
-1. 한 줄의 정점을 골라 UV Vertices의 **Center V**로 가로 일직선을 만듭니다.
+1. 한 줄의 정점을 골라 UV Vertices의 가로 정렬(5번째 아이콘)로 가로 일직선을 만듭니다.
 2. 같은 선택에서 **Distribute U**로 간격을 고르게 합니다.
 3. 줄마다 반복합니다.
 4. 테두리를 편 뒤 안쪽 정점만 골라 Unstretch의 **Relax / Unstretch**로 늘어짐을 풉니다.
+
+### 3D 모델 순서대로 줄 세우기
+
+1. 줄 세울 아일랜드를 선택합니다(선택이 없으면 전체).
+2. Distribute / Sort에서 기준 축(X, Y, Z)을 고릅니다.
+3. **Sort U**(가로) 또는 **Sort V**(세로)를 누릅니다.
+4. 타일 안에 담으려면 이어서 Tile / Pack의 **Pack into Tile**을 누릅니다.
 
 ### 오브젝트 여러 개의 밀도 맞추기
 
@@ -347,10 +412,12 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 
 ## 경고 메시지와 문제 해결
 
+화면 아래 상태 표시줄이나 Info 창에 나오는 메시지입니다.
+
 | 메시지 | 뜻과 해결 |
 |---|---|
-| No UV islands found | 대상이 될 아일랜드가 없습니다. Sync가 꺼져 있다면 3D 뷰포트에서 면을 선택합니다. |
-| Select at least two islands | 분배는 아일랜드가 두 개 이상 있어야 합니다. |
+| No UV islands found | 대상이 될 아일랜드가 없습니다. Sync가 꺼져 있다면 3D 뷰포트에서 면을 선택합니다. 아일랜드를 다루는 모든 도구가 같은 경고를 냅니다. |
+| Select at least two islands | Distribute와 Sort는 아일랜드가 두 개 이상 있어야 합니다. |
 | The islands do not fit in one tile - enable Scale to Fit or lower the margin | Scale to Fit이 꺼진 상태에서 아일랜드가 타일에 다 들어가지 않습니다. 켜거나 Margin을 줄입니다. |
 | The margin is too large for this many islands - lower the margin | Scale to Fit이 켜져 있어도 Margin만으로 타일이 가득 찹니다. Margin을 줄입니다. |
 | Select a UV edge inside the island | To Edge에 쓸 엣지를 선택합니다. |
@@ -362,16 +429,20 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 | Select UV edges that have a matching edge on another island | 선택한 엣지가 seam이 아니거나 이미 붙어 있습니다. |
 | Select the UV vertices you want to relax | Unstretch할 정점을 선택합니다. |
 | Only outline vertices are selected - select inner vertices or turn off Pin Boundary | 선택한 정점이 모두 아일랜드 윤곽 위에 있습니다. 안쪽 정점을 선택하거나 Pin Boundary를 끕니다. |
+| Relax could not solve N island(s): they have no open UV border; they were left unchanged | 모든 엣지가 붙어 있어 UV에 열린 경계가 없는 아일랜드입니다. 풀 수 없어서 그대로 두었습니다. UV를 어디선가 갈라서(seam을 두고 Unwrap 등) 열린 경계를 만든 뒤 다시 시도합니다. |
 | Relax could not solve N island(s); they were left unchanged | 풀기에 실패한 아일랜드는 그대로 두었습니다. 선택 범위를 줄이거나 아일랜드를 나눠 다시 시도합니다. |
 | Relax failed | Blender의 펼치기 계산이 실패했습니다. 선택 범위를 줄여 다시 시도합니다. |
+| Could not restore selection / seams / pins on (오브젝트 이름) - press Ctrl+Z | Relax가 끝난 뒤 그 오브젝트의 선택, seam, 핀을 원래대로 돌리지 못했습니다. Ctrl+Z로 되돌린 뒤 다시 시도하세요. |
 | No UV editor is open | Show Stretch는 UV 에디터가 열려 있어야 합니다. |
 
 | 증상 | 확인할 것 |
 |---|---|
 | HamzziUVWs 탭이 없다 | 메시가 Edit Mode인지, 애드온이 Preferences에서 켜져 있는지 확인합니다. |
+| 패널 위 로고가 안 보인다 | 설치용 zip에 `images/logo.png`가 들어 있는지 확인합니다. 로고가 없어도 기능은 동작합니다. |
 | 버튼이 회색이다 | Edit Mode의 메시 오브젝트가 있는지 확인합니다. Scale은 두 배율이 모두 1이면 꺼집니다. |
 | 선택한 것보다 많이 움직인다 | 아일랜드 도구는 정점 하나만 골라도 아일랜드 전체를 움직입니다. 선택이 없으면 전체가 대상입니다. |
 | 밀도를 맞췄더니 아일랜드가 겹친다 | 정상 동작입니다. Pack into Tile이나 Blender의 Pack Islands로 다시 배치합니다. |
+| Relax했더니 아일랜드가 이웃과 겹친다 | Pin Boundary를 끄고 풀었을 때 생길 수 있습니다. Pin Boundary를 켜면 윤곽이 그대로라 겹치지 않습니다. |
 | Connected Edges가 보이지 않는다 | 표시가 켜져 있는지, 면 수가 Face Limit을 넘지 않는지, 짝이 다른 위치에 있는지 확인합니다. |
 | UV 에디터에서 끌 때 느리거나 Blender가 멈춘다 | Connected Edges의 Show를 끄고 다시 시도합니다. 계속되면 알려 주세요. |
 | 패널이 이전 버전 모습이다 | 새 zip을 설치한 뒤 Blender를 다시 시작합니다. |
@@ -380,6 +451,7 @@ UV 에디터에서 선택한 요소가 다른 아일랜드의 어디로 이어�
 
 - Stitch는 선택한 엣지 단위로만 동작하며, 가까운 엣지를 자동으로 찾아 붙이지는 않습니다.
 - Unstretch는 브러시가 아니라 선택 영역에 한 번에 적용됩니다.
+- Pack into Tile은 아일랜드의 경계 상자 기준으로 놓고 회전하지 않습니다.
 - 밀도를 바꿔도 아일랜드를 자동으로 다시 배치하지 않습니다.
 - Connected Edges는 면이 Face Limit을 넘으면 표시를 건너뜁니다.
 - 패널의 버튼 이름은 영어입니다.
