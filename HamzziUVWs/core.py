@@ -123,9 +123,18 @@ class Island:
         return sum(abs(face_winding(f, uv)) for f in self.faces) / 2
 
     def area3d(self):
+        """Surface area in world space.
+
+        The object transform is applied to every vertex, so a scale that differs per
+        axis (stretched along X only, say) changes each face by its own amount."""
         m = self.obj.ob.matrix_world.to_3x3()
-        s = abs(m.determinant()) ** (1 / 3)
-        return sum(f.calc_area() for f in self.faces) * s * s
+        total = 0.0
+        for f in self.faces:
+            p = [m @ l.vert.co for l in f.loops]
+            a = p[0]
+            total += sum(((p[i] - a).cross(p[i + 1] - a)).length
+                         for i in range(1, len(p) - 1)) / 2
+        return total
 
     def center3d(self):
         """Average face centre of the island in world space."""

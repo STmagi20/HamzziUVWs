@@ -280,6 +280,62 @@ class UVED_OT_transform_islands(EditOp, Operator):
         return {'FINISHED'}
 
 
+def _convex_hull(p):
+    """Convex hull of 2D points (monotone chain), counter-clockwise, no repeats."""
+    p = p[np.lexsort((p[:, 1], p[:, 0]))]
+    if len(p) < 3:
+        return p
+
+    def half(points):
+        out = []
+        for q in points:
+            while len(out) >= 2 and ((out[-1][0] - out[-2][0]) * (q[1] - out[-2][1])
+                                     - (out[-1][1] - out[-2][1]) * (q[0] - out[-2][0])) <= 0:
+                out.pop()
+            out.append(q)
+        return out
+
+    lower, upper = half(p), half(p[::-1])
+    return np.array(lower[:-1] + upper[:-1])
+
+
+def min_box_rotation(p):
+    """Rotation (radians, between -45 and +45 degrees) that gives the points the
+    smallest axis-aligned bounding box.
+
+    The smallest box always has one side along an edge of the convex hull, so only
+    those edge directions are tried; the result is exact, not a sampled angle. Among
+    rotations that give the same box, the smallest one wins, so an island that is
+    already square to the axes is left alone."""
+    hull = _convex_hull(np.unique(p, axis=0))
+    if len(hull) < 3:
+        if len(hull) < 2:
+            return 0.0
+        edges = hull[1:] - hull[:1]          # a straight line of UVs: lay it on an axis
+    else:
+        edges = np.roll(hull, -1, axis=0) - hull
+    lengths = np.hypot(edges[:, 0], edges[:, 1])
+    edges = edges[lengths > 1e-9]
+    if not len(edges):
+        return 0.0
+    quarter = math.pi / 2
+    # angle of each edge folded into (-45, 45]: rotating by minus that lays the edge
+    # on the nearest axis
+    ang = np.arctan2(edges[:, 1], edges[:, 0])
+    ang = (ang + quarter / 2) % quarter - quarter / 2
+    candidates = np.unique(np.round(np.concatenate(([0.0], -ang)), 12))
+
+    best, best_a = None, 0.0
+    for a in sorted(candidates, key=abs):
+        c, s = math.cos(a), math.sin(a)
+        x = hull[:, 0] * c - hull[:, 1] * s
+        y = hull[:, 0] * s + hull[:, 1] * c
+        area = (x.max() - x.min()) * (y.max() - y.min())
+        if best is None or area < best * (1 - 1e-9):
+            best, best_a = area, float(a)
+    return best_a
+
+
 class UVED_OT_auto_orient(EditOp, Operator):
     bl_idname = "uved.auto_orient"
     bl_label = "Auto Orient"
@@ -295,20 +351,9 @@ class UVED_OT_auto_orient(EditOp, Operator):
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
-        angles = np.radians(np.arange(0.0, 90.0, 0.5))
         for i in isl:
-            p = i.pts()
             cx, cy = i.center()
-            p = np.unique(np.round(p, 6), axis=0) - (cx, cy)
-            best, best_a = None, 0.0
-            for a in angles:
-                c, s = math.cos(a), math.sin(a)
-                x = p[:, 0] * c - p[:, 1] * s
-                y = p[:, 0] * s + p[:, 1] * c
-                area = (x.max() - x.min()) * (y.max() - y.min())
-                if best is None or area < best - 1e-12:
-                    best, best_a = area, a
-            i.rotate(best_a, cx, cy)
+            i.rotate(min_box_rotation(i.pts() - (cx, cy)), cx, cy)
             x0, y0, x1, y1 = i.bounds()
             w, h = x1 - x0, y1 - y0
             if (self.target == 'HORIZONTAL' and h > w) or (self.target == 'VERTICAL' and w > h):
