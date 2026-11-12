@@ -6,7 +6,7 @@
 
 <p align="center">이미 펼친 UV를 정리하는 Blender 애드온</p>
 
-흩어진 UV 아일랜드를 정렬하고 타일 안에 배치하고, 이음선을 붙이고, 늘어진 UV를 풀고, 텍셀 밀도를 맞춥니다. 3ds Max Unwrap UVW에서 쓰던 Stitch, Relax, 연결 엣지 표시 같은 기능을 Blender 사이드바 버튼으로 쓸 수 있게 만들었습니다. UV를 새로 펼치는 기능은 없습니다.
+사이드바 버튼으로 흩어진 아일랜드를 정렬해 타일 안에 배치하고, 이음선을 붙이고, 늘어진 UV를 풀고, 텍셀 밀도를 맞출 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
 
 - Blender 4.2 이상 (5.2에서 테스트했고, 그 아래 버전에서는 실행해 보지 않았습니다)
 - 제작: StudyingHamzzi
@@ -14,7 +14,7 @@
 
 ## 화면
 
-3D 뷰포트와 UV 에디터의 사이드바(N 키)에 **HamzziUVWs** 탭이 생깁니다. 메시가 Edit Mode일 때 보입니다.
+메시를 Edit Mode로 두면 3D 뷰포트와 UV 에디터의 사이드바(N 키)에 **HamzziUVWs** 탭이 나타납니다.
 
 <table>
   <tr>
@@ -27,14 +27,14 @@
 
 | 패널 | 할 수 있는 일 |
 |---|---|
-| Align Islands | 아일랜드를 좌·우·상·하·중앙으로 정렬 (선택 영역 또는 0–1 타일 기준) |
-| Distribute / Sort | 간격을 고르게 분배하거나, 3D 위치 순서대로 한 줄(또는 한 열)에 나란히 정렬 |
+| Align Islands | 아일랜드를 가장자리나 가운데에 맞춤 (기준: 선택 영역 또는 0–1 타일) |
+| Distribute / Sort | 간격을 고르게 분배, 3D 위치 순서대로 한 줄(또는 한 열)에 나열 |
 | Tile / Pack | UDIM 타일로 이동, 타일 안에 줄 맞춰 자동 배치 (Margin, Scale to Fit) |
-| Transform | 90°·180°·임의 각도 회전, 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, U·V 배율 |
-| Texel Density | 밀도 측정, 목표값 적용, 평균으로 통일, 활성 면 기준 맞춤 |
-| UV Vertices | 선택한 UV 정점을 정렬하고 균등 분배 (엣지 펴기) |
-| Stitch | 선택한 UV 엣지를 이웃 아일랜드의 짝 엣지에 붙임. 모양이 달라도 이음선 끝점이 정확히 붙음 |
-| Unstretch | 선택한 UV를 3D 형태에 맞게 다시 풀어 늘어짐 해소, 스트레치 표시 토글 |
+| Transform | 회전(90°, 180°, 원하는 각도), 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, U·V 배율 조정 |
+| Texel Density | 밀도 측정, 목표값 적용, 평균으로 통일, 활성 면의 밀도에 맞춤 |
+| UV Vertices | 선택한 UV 정점의 정렬과 균등 분배 (엣지 펴기) |
+| Stitch | 선택한 UV 엣지를 이웃 아일랜드의 같은 엣지에 붙임. 모양이 달라도 이음선 끝점이 정확히 붙음 |
+| Unstretch | 늘어난 UV를 3D 표면의 비율에 가깝게 다시 계산, 스트레치 표시 켜고 끄기 |
 | Connected Edges | 선택한 점·선·면이 다른 아일랜드의 어디로 이어지는지 파란색으로 표시 |
 
 ## 설치
@@ -57,15 +57,15 @@
 
 1. 메시를 선택하고 Tab 키로 Edit Mode에 들어갑니다.
 2. UV 에디터를 열고 N 키로 사이드바를 연 뒤 **HamzziUVWs** 탭을 누릅니다.
-3. 아무것도 선택하지 않으면 보이는 아일랜드 전체에, 선택하면 선택한 아일랜드에 적용됩니다. 모든 도구는 Ctrl+Z로 되돌릴 수 있습니다.
+3. 아일랜드 도구는 선택한 아일랜드에 적용되고, 아무것도 선택하지 않으면 보이는 아일랜드 전체에 적용됩니다. 실행한 도구는 Ctrl+Z로 되돌릴 수 있습니다.
 
-예를 들어 흩어진 아일랜드를 정리하려면 **Tile / Pack**에서 U 0, V 0을 확인하고 **Pack into Tile**을 누릅니다. 전체 도구의 사용 순서와 예시는 [사용 가이드](docs/GUIDE.md)에 있습니다.
+예를 들어 흩어진 아일랜드를 정리하려면 **Tile / Pack**에서 U 0, V 0을 확인하고 **Pack into Tile**을 누릅니다. 모든 도구의 사용법과 작업 예시는 [사용 가이드](docs/GUIDE.md)에 있습니다.
 
 ## 알려진 한계
 
-- Stitch는 선택한 엣지 단위로만 동작하며, 가까운 엣지를 자동으로 찾아 붙이지는 않습니다.
+- Stitch는 선택한 엣지에만 동작하며, 가까운 엣지를 자동으로 찾아 붙이지는 않습니다.
 - Unstretch는 브러시가 아니라 선택 영역에 한 번에 적용됩니다. 구처럼 평평하게 펼 수 없는 형태는 면적 왜곡이 남습니다.
-- Pack into Tile은 아일랜드의 경계 상자 기준으로 놓습니다. 복잡한 모양을 빈틈없이 끼워 넣으려면 Blender의 Pack Islands가 더 촘촘합니다.
+- Pack into Tile은 아일랜드의 경계 상자를 기준으로 배치하고 회전하지 않습니다. 복잡한 모양을 빈틈없이 끼워 넣으려면 Blender의 Pack Islands가 더 촘촘하게 배치합니다.
 - Connected Edges는 Edit Mode의 면이 Face Limit(기본 1만 개)을 넘으면 표시를 건너뜁니다.
 - 패널의 버튼 이름은 영어입니다.
 
@@ -78,7 +78,7 @@
 | `HamzziUVWs/__init__.py` | 등록·해제 |
 | `HamzziUVWs/blender_manifest.toml` | 확장 정보와 버전 |
 | `HamzziUVWs/info.py` | 이름, 제작자, 버전 |
-| `HamzziUVWs/icons.py`, `HamzziUVWs/images/logo.png` | 패널 맨 위 로고 (없어도 동작) |
+| `HamzziUVWs/icons.py`, `HamzziUVWs/images/` | 패널 이름 앞의 작은 로고(`logo.png`)와 About의 전신 그림(`mascot.png`). 없어도 애드온은 동작합니다 |
 | `HamzziUVWs/core.py` | UV 데이터 접근: 편집 오브젝트, 선택 판정, 아일랜드 |
 | `HamzziUVWs/properties.py` | 패널에 보이는 설정값 |
 | `HamzziUVWs/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
