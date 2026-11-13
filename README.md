@@ -83,12 +83,21 @@
 | `HamzziUVToolkit/icons.py`, `HamzziUVToolkit/images/` | 패널 이름 앞의 작은 로고(`logo.png`)와 About의 전신 그림(`mascot.png`). 없어도 애드온은 동작합니다 |
 | `HamzziUVToolkit/core.py` | UV 데이터 접근: 편집 오브젝트, 선택 판정, 아일랜드 |
 | `HamzziUVToolkit/properties.py` | 패널에 보이는 설정값 |
-| `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
-| `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지 표시 |
+| `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`, `flipped`) |
+| `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지와 뒤집힌 면 표시 |
 | `HamzziUVToolkit/ui.py` | 사이드바 패널 |
 | `docs/GUIDE.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
+| `tests/` | 자동 테스트 (설치용 zip에는 들어가지 않음) |
 
 버전은 `blender_manifest.toml`에만 적습니다. 패널에 보이는 버전은 이 파일에서 읽어 옵니다.
+
+테스트는 백그라운드 Blender로 실행합니다. 모두 통과하면 종료 코드가 0입니다. 파일 이름 일부(예: `orient`)를 `--` 뒤에 적으면 그 테스트만 돌립니다.
+
+```bash
+blender --background --factory-startup --python tests/run_tests.py
+```
+
+백그라운드에는 UV 에디터가 없어서 Relax의 실제 동작과 화면 표시는 테스트가 확인하지 못합니다. 이 둘은 UV 에디터를 연 Blender에서 직접 확인하세요.
 
 설치용 zip은 커밋한 뒤 아래 명령으로 만듭니다. zip 최상위에 `blender_manifest.toml`이 오도록 폴더 내용만 묶습니다.
 
