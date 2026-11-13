@@ -2,6 +2,7 @@
 import math
 import unittest
 
+import bmesh
 import bpy
 
 import helpers
@@ -39,6 +40,26 @@ class SurfaceArea(unittest.TestCase):
     def test_quad_is_split_into_triangles_correctly(self):
         ob = helpers.plane_object(width=2.0, height=3.0)
         self.assertAlmostEqual(_island(ob).area3d(), 6.0, places=9)
+
+    def test_concave_face_is_not_counted_twice(self):
+        # arrowhead quad whose second corner points inward: a fan from the first corner
+        # covers part of it twice. Its area is 1.6 (2 x the scale along X)
+        for scale, area in (((1, 1, 1), 1.6), ((2, 1, 1), 3.2)):
+            with self.subTest(scale=scale):
+                helpers.fresh()
+                me = bpy.data.meshes.new("arrow")
+                bm = bmesh.new()
+                bm.loops.layers.uv.new("UVMap")
+                bm.faces.new([bm.verts.new(p) for p in
+                              ((0, 0, 0), (1, 0.4, 0), (2, 0, 0), (1, 2, 0))])
+                bm.to_mesh(me)
+                bm.free()
+                ob = helpers.link(bpy.data.objects.new("arrow", me))
+                ob.scale = scale
+                bpy.context.view_layer.update()
+                # 0.4 is stored as a 32-bit float in the mesh, hence 6 places
+                self.assertAlmostEqual(_island(ob).area3d(), area, places=6)
+                helpers.leave_edit()
 
 
 class Density(unittest.TestCase):

@@ -134,14 +134,18 @@ class Island:
         """Surface area in world space.
 
         The object transform is applied to every vertex, so a scale that differs per
-        axis (stretched along X only, say) changes each face by its own amount."""
+        axis (stretched along X only, say) changes each face by its own amount.
+        The fan's cross products are added as vectors before taking the length, so the
+        parts of a concave face that a fan triangle covers twice cancel out."""
         m = self.obj.ob.matrix_world.to_3x3()
         total = 0.0
         for f in self.faces:
             p = [m @ l.vert.co for l in f.loops]
             a = p[0]
-            total += sum(((p[i] - a).cross(p[i + 1] - a)).length
-                         for i in range(1, len(p) - 1)) / 2
+            n = Vector((0.0, 0.0, 0.0))
+            for i in range(1, len(p) - 1):
+                n += (p[i] - a).cross(p[i + 1] - a)
+            total += n.length / 2
         return total
 
     def center3d(self):
