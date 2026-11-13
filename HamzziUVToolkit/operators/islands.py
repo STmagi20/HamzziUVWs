@@ -134,14 +134,23 @@ class UVED_OT_move_to_tile(EditOp, Operator):
     bl_label = "Move to Tile"
     bl_description = "Move each selected island into the given UDIM tile (keeps its position inside the tile)"
 
-    def execute(self, context):
+    # Own copies of the panel values, so the tile can be changed in the Adjust Last
+    # Operation panel after the run. Pressing the button starts them from the panel.
+    tile_u: IntProperty(name="U", default=0, description="UDIM tile column to move into")
+    tile_v: IntProperty(name="V", default=0, description="UDIM tile row to move into")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.tile_u, self.tile_v = s.tile_u, s.tile_v
+        return self.execute(context)
+
+    def execute(self, context):
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
-            i.translate(s.tile_u - math.floor(cx), s.tile_v - math.floor(cy))
+            i.translate(self.tile_u - math.floor(cx), self.tile_v - math.floor(cy))
         finish(objs)
         return {'FINISHED'}
 
@@ -243,14 +252,24 @@ class UVED_OT_scale_islands(EditOp, Operator):
     bl_label = "Scale Islands"
     bl_description = "Scale each selected island around its own center"
 
-    def execute(self, context):
+    # Own copies of the panel values (see UVED_OT_pack_to_tile)
+    scale_u: FloatProperty(name="U", default=1.0, min=0.001, soft_max=10.0,
+                           description="Multiply island width by this factor")
+    scale_v: FloatProperty(name="V", default=1.0, min=0.001, soft_max=10.0,
+                           description="Multiply island height by this factor")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.scale_u, self.scale_v = s.scale_u, s.scale_v
+        return self.execute(context)
+
+    def execute(self, context):
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
         for i in isl:
             cx, cy = i.center()
-            i.scale(s.scale_u, s.scale_v, cx, cy)
+            i.scale(self.scale_u, self.scale_v, cx, cy)
         finish(objs)
         return {'FINISHED'}
 
@@ -262,6 +281,17 @@ class UVED_OT_transform_islands(EditOp, Operator):
 
     mode: EnumProperty(items=[(k, k, "") for k in
                               ('CW90', 'CCW90', 'ROT180', 'ANGLE', 'FLIP_H', 'FLIP_V')])
+    # Own copy of the panel angle, used by the ANGLE mode only (see UVED_OT_pack_to_tile)
+    angle: FloatProperty(name="Angle", default=math.radians(15.0), subtype='ANGLE',
+                         description="Counter-clockwise rotation of each island")
+
+    def invoke(self, context, event):
+        self.angle = context.scene.uved.rot_angle
+        return self.execute(context)
+
+    def draw(self, context):
+        if self.mode == 'ANGLE':
+            self.layout.prop(self, "angle")
 
     @classmethod
     def description(cls, context, properties):
@@ -275,7 +305,6 @@ class UVED_OT_transform_islands(EditOp, Operator):
         }.get(properties.mode, cls.bl_description)
 
     def execute(self, context):
-        s = context.scene.uved
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
@@ -288,7 +317,7 @@ class UVED_OT_transform_islands(EditOp, Operator):
             elif self.mode == 'ROT180':
                 i.rotate(math.pi, cx, cy)
             elif self.mode == 'ANGLE':
-                i.rotate(s.rot_angle, cx, cy)
+                i.rotate(self.angle, cx, cy)
             elif self.mode == 'FLIP_H':
                 i.scale(-1, 1, cx, cy)
             elif self.mode == 'FLIP_V':
