@@ -12,6 +12,23 @@ from bpy.types import Operator
 from ..core import EPS, EditOp, finish, group_bounds, targets, targets_or_warn
 
 
+def _gap_mode():
+    return EnumProperty(
+        name="Spacing", default='EQUAL',
+        items=[('EQUAL', "Equal Gaps", "Even gaps between the outermost islands"),
+               ('FIXED', "Fixed Gap", "Use the gap value below")])
+
+
+def _gap():
+    return FloatProperty(name="Gap", default=0.01, min=-1.0, max=1.0, precision=4)
+
+
+def _draw_gap(op):
+    op.layout.prop(op, "gap_mode", expand=True)
+    if op.gap_mode == 'FIXED':
+        op.layout.prop(op, "gap")
+
+
 class UVED_OT_align_islands(EditOp, Operator):
     bl_idname = "uved.align_islands"
     bl_label = "Align Islands"
@@ -66,9 +83,19 @@ class UVED_OT_distribute_islands(EditOp, Operator):
     bl_description = "Space the selected islands evenly"
 
     axis: EnumProperty(items=[('U', "U", ""), ('V', "V", "")])
+    # Own copies of the panel values (see UVED_OT_pack_to_tile)
+    gap_mode: _gap_mode()
+    gap: _gap()
+
+    def invoke(self, context, event):
+        s = context.scene.uved
+        self.gap_mode, self.gap = s.gap_mode, s.gap
+        return self.execute(context)
+
+    def draw(self, context):
+        _draw_gap(self)
 
     def execute(self, context):
-        s = context.scene.uved
         objs, isl = targets_or_warn(self, context, 2, "Select at least two islands")
         if not isl:
             return {'CANCELLED'}
@@ -78,11 +105,11 @@ class UVED_OT_distribute_islands(EditOp, Operator):
             b = i.bounds()
             info.append((b[k], b[k + 2], i))
         info.sort(key=lambda t: t[0])
-        if s.gap_mode == 'EQUAL':
+        if self.gap_mode == 'EQUAL':
             span = max(t[1] for t in info) - info[0][0]
             gap = (span - sum(t[1] - t[0] for t in info)) / (len(info) - 1)
         else:
-            gap = s.gap
+            gap = self.gap
         pos = info[0][0]
         for lo, hi, i in info:
             d = pos - lo
@@ -100,23 +127,45 @@ class UVED_OT_sort_islands(EditOp, Operator):
 
     axis: EnumProperty(items=[('U', "U", "Place the islands in a row, left to right"),
                               ('V', "V", "Place the islands in a column, bottom to top")])
+    # Own copies of the panel values (see UVED_OT_pack_to_tile)
+    order_by: EnumProperty(
+        name="Order By", default='X',
+        items=[('X', "X", "Order the islands by their X position in 3D space"),
+               ('Y', "Y", "Order the islands by their Y position in 3D space"),
+               ('Z', "Z", "Order the islands by their Z position in 3D space")])
+    reverse: BoolProperty(
+        name="Reverse", default=False,
+        description="Reverse the order (highest 3D position first)")
+    gap_mode: _gap_mode()
+    gap: _gap()
+
+    def invoke(self, context, event):
+        s = context.scene.uved
+        self.order_by, self.reverse = s.sort_axis, s.sort_reverse
+        self.gap_mode, self.gap = s.gap_mode, s.gap
+        return self.execute(context)
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.prop(self, "order_by", expand=True)
+        row.prop(self, "reverse", text="", icon='ARROW_LEFTRIGHT', toggle=True)
+        _draw_gap(self)
 
     def execute(self, context):
-        s = context.scene.uved
         objs, isl = targets_or_warn(self, context, 2, "Select at least two islands")
         if not isl:
             return {'CANCELLED'}
         k = 0 if self.axis == 'U' else 1          # direction of the line
-        ax = {'X': 0, 'Y': 1, 'Z': 2}[s.sort_axis]
+        ax = {'X': 0, 'Y': 1, 'Z': 2}[self.order_by]
         order = sorted(isl, key=lambda i: (round(i.center3d()[ax], 5), i.bounds()[k]))
-        if s.sort_reverse:
+        if self.reverse:
             order.reverse()
         box = group_bounds(isl)
         start, base = box[k], box[1 - k]          # first island and the common edge
         size = [i.bounds() for i in order]
         widths = [b[k + 2] - b[k] for b in size]
-        if s.gap_mode == 'FIXED':
-            gap = s.gap
+        if self.gap_mode == 'FIXED':
+            gap = self.gap
         else:
             # keep the width of the group, but never let the islands overlap
             gap = max(((box[k + 2] - box[k]) - sum(widths)) / (len(order) - 1), 0.0)

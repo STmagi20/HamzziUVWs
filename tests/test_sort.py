@@ -32,10 +32,9 @@ class SortIslands(unittest.TestCase):
         obs = [helpers.quads_object(items, f"o{n}", location=off)
                for n, (off, items) in enumerate(objects)]
         helpers.enter_edit(obs)
-        s = helpers.settings()
-        s.sort_axis, s.sort_reverse, s.gap_mode, s.gap = axis_3d, reverse, gap_mode, gap
         before = snapshot()
-        self.assertEqual(bpy.ops.uved.sort_islands(axis=direction), {'FINISHED'})
+        self.assertEqual(bpy.ops.uved.sort_islands(axis=direction, order_by=axis_3d, reverse=reverse,
+                                                   gap_mode=gap_mode, gap=gap), {'FINISHED'})
         after = snapshot()
 
         k = 0 if direction == 'U' else 1
