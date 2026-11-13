@@ -30,12 +30,11 @@
 | Align Islands | 아일랜드를 가장자리나 가운데에 맞춤 (기준: 선택 영역 또는 0–1 타일) |
 | Distribute / Sort | 간격을 고르게 분배, 3D 위치 순서대로 한 줄(또는 한 열)에 나열 |
 | Tile / Pack | UDIM 타일로 이동, 타일 안에 줄 맞춰 자동 배치 (Margin, Scale to Fit) |
-| Transform | 회전(90°, 180°, 원하는 각도), 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, U·V 배율 조정 |
+| Transform | 회전(90°, 180°, 원하는 각도), 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, U·V 배율 조정, UV가 뒤집힌 면을 빨간색으로 표시 |
 | Texel Density | 밀도 측정, 목표값 적용, 평균으로 통일, 활성 면의 밀도에 맞춤 |
 | UV Vertices | 선택한 UV 정점의 정렬과 균등 분배 (엣지 펴기) |
 | Stitch | 선택한 UV 엣지를 이웃 아일랜드의 같은 엣지에 붙임. 모양이 달라도 이음선 끝점이 정확히 붙음 |
 | Unstretch | 늘어난 UV를 3D 표면의 비율에 가깝게 다시 계산, 스트레치 표시 켜고 끄기 |
-| Flipped Faces | UV가 거꾸로 놓인(뒤집힌) 면을 빨간색으로 표시하고 한 번에 선택 |
 | Connected Edges | 선택한 점·선·면이 다른 아일랜드의 어디로 이어지는지 파란색으로 표시 |
 
 ## 설치
@@ -83,7 +82,7 @@
 | `HamzziUVToolkit/icons.py`, `HamzziUVToolkit/images/` | 패널 이름 앞의 작은 로고(`logo.png`)와 About의 전신 그림(`mascot.png`). 없어도 애드온은 동작합니다 |
 | `HamzziUVToolkit/core.py` | UV 데이터 접근: 편집 오브젝트, 선택 판정, 아일랜드 |
 | `HamzziUVToolkit/properties.py` | 패널에 보이는 설정값 |
-| `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`, `flipped`) |
+| `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
 | `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지와 뒤집힌 면 표시 |
 | `HamzziUVToolkit/ui.py` | 사이드바 패널 |
 | `docs/GUIDE.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |

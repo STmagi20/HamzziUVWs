@@ -1,4 +1,4 @@
-"""Flipped Faces: finding faces mirrored in UV space, selecting them, and the fill geometry."""
+"""Flipped Faces: finding faces mirrored in UV space and the fill geometry."""
 import unittest
 
 import bmesh
@@ -128,39 +128,6 @@ class FlippedFaces(unittest.TestCase):
         bm.faces[1].hide_set(True)
         bmesh.update_edit_mesh(ob.data)
         self.assertEqual(flipped_indices(), [4])
-
-    def test_select_with_uv_sync_selects_exactly_those_faces(self):
-        ob = self._edit(sync=True)
-        mirror_faces(ob, [1, 4])
-        self.assertEqual(bpy.ops.uved.select_flipped(), {'FINISHED'})
-        self.assertEqual(helpers.face_indices(ob), [1, 4])
-        self.assertEqual(tuple(helpers.tool_settings().mesh_select_mode), (False, False, True))
-
-    def test_select_without_uv_sync_changes_only_the_uv_selection(self):
-        ob = self._edit(sync=False)
-        mirror_faces(ob, [1, 4])
-        self.assertEqual(bpy.ops.uved.select_flipped(), {'FINISHED'})
-        self.assertEqual(helpers.face_indices(ob), [0, 1, 2, 3, 4, 5])      # mesh selection kept
-        if hasattr(bmesh.types.BMFace, "uv_select"):                         # Blender 5.x
-            self.assertEqual(helpers.face_indices(ob, "uv_select"), [1, 4])
-
-    def test_neighbours_are_not_selected_along_in_vertex_mode(self):
-        # a 4x4 grid: faces whose points are all selected through their neighbours
-        bm = bmesh.new()
-        bmesh.ops.create_grid(bm, x_segments=4, y_segments=4, size=1.0)
-        me = bpy.data.meshes.new("grid")
-        bm.to_mesh(me)
-        bm.free()
-        ob = helpers.link(bpy.data.objects.new("grid", me))
-        helpers.enter_edit([ob], sync=True, select_mode='VERT')
-        bpy.ops.uv.unwrap(method='ANGLE_BASED', margin=0.0)
-        mirror_faces(ob, [2, 3, 9, 10, 13])
-        self.assertEqual(bpy.ops.uved.select_flipped(), {'FINISHED'})
-        self.assertEqual(helpers.face_indices(ob), [2, 3, 9, 10, 13])
-
-    def test_cancelled_when_nothing_is_flipped(self):
-        self._edit()
-        self.assertEqual(bpy.ops.uved.select_flipped(), {'CANCELLED'})
 
 
 class FlippedGeometry(unittest.TestCase):

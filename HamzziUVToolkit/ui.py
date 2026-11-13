@@ -67,6 +67,7 @@ def _ui_rotate(layout, s):
     r = c.row(align=True)
     _op(r, "uved.transform_islands", "Flip H", mode='FLIP_H')
     _op(r, "uved.transform_islands", "Flip V", mode='FLIP_V')
+    _ui_flipped(layout, s)
     r = layout.row(align=True)
     r.prop(s, "rot_angle", text="")
     _op(r, "uved.transform_islands", "Rotate", mode='ANGLE')
@@ -130,11 +131,10 @@ def _ui_unstretch(layout, s):
 
 def _ui_flipped(layout, s):
     r = layout.row(align=True)
-    r.prop(s, "show_flipped", text="Show")
+    r.prop(s, "show_flipped", text="Show Flipped")
     sub = r.row(align=True)
     sub.enabled = s.show_flipped
     sub.prop(s, "flipped_color", text="")
-    layout.operator("uved.select_flipped", icon='RESTRICT_SELECT_OFF')
 
 
 def _ui_display(layout, s):
@@ -183,7 +183,6 @@ _SECTIONS = (
     ("vertices", "UV Vertices", _ui_vertices),
     ("stitch", "Stitch", _ui_stitch),
     ("unstretch", "Unstretch", _ui_unstretch),
-    ("flipped", "Flipped Faces", _ui_flipped),
     ("display", "Connected Edges", _ui_display, {'DEFAULT_CLOSED'}),
     ("about", "About", _ui_about, {'DEFAULT_CLOSED'}),
 )
