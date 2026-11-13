@@ -11,7 +11,7 @@ import numpy as np
 from mathutils import Vector
 
 EPS = 1e-5
-FLIP_EPS = 1e-12      # twice the UV area below which a face counts as having no area
+FLIP_EPS = 1e-6       # twice the UV area below which a face counts as having no area
 
 
 def edit_objects(context):
@@ -55,11 +55,60 @@ class UVObject:
         bmesh.update_edit_mesh(self.ob.data, loop_triangles=False, destructive=False)
 
     def flipped_faces(self):
-        """Visible faces whose UV outline runs clockwise, i.e. the face is mirrored in UV
-        space. Faces with no UV area are not counted."""
+        """Visible faces whose UV is mirrored when the surface is seen from outside.
+
+        A texture reads correctly only when the face is seen from outside, so the stored
+        normal direction is not trusted: it can point inward on a model that looks right.
+        Faces joined by mesh edges form a surface. Its outside is found from the signed
+        volume it encloses, with every face's loop order corrected to agree with its
+        neighbours. A face is flipped when its UV runs the other way round than that
+        outward order. A flat surface encloses no volume; its normal side counts as
+        outside. Faces with almost no UV area are never reported."""
         uv = self.uv
-        return [f for f in self.bm.faces
-                if self.visible(f) and face_winding(f, uv) < -FLIP_EPS]
+        faces = [f for f in self.bm.faces if self.visible(f)]
+        idx = {f: i for i, f in enumerate(faces)}
+        wind = [face_winding(f, uv) for f in faces]
+        handed = 1 if self.ob.matrix_world.determinant() >= 0 else -1     # a negative scale mirrors
+
+        # neighbours with +1 when the two faces run their shared edge in opposite
+        # directions (consistent normals) and -1 when in the same direction
+        nbrs = [[] for _ in faces]
+        for e in self.bm.edges:
+            ls = [l for l in e.link_loops if l.face in idx]
+            for k in range(1, len(ls)):
+                a, b = idx[ls[0].face], idx[ls[k].face]
+                rel = -1 if ls[0].vert == ls[k].vert else 1
+                nbrs[a].append((b, rel))
+                nbrs[b].append((a, rel))
+
+        parity = [0] * len(faces)       # +-1: loop order relative to the first face of its surface
+        out = []
+        for root in range(len(faces)):
+            if parity[root]:
+                continue
+            parity[root] = 1
+            comp, stack = [root], [root]
+            while stack:
+                a = stack.pop()
+                for b, rel in nbrs[a]:
+                    if not parity[b]:
+                        parity[b] = parity[a] * rel
+                        comp.append(b)
+                        stack.append(b)
+
+            verts = {v for i in comp for v in faces[i].verts}
+            c = sum((v.co for v in verts), Vector((0.0, 0.0, 0.0))) / len(verts)
+            volume = area = 0.0
+            for i in comp:
+                p = [v.co - c for v in faces[i].verts]
+                vol = sum(p[0].dot(p[k].cross(p[k + 1])) for k in range(1, len(p) - 1)) / 6
+                volume += parity[i] * vol
+                area += faces[i].calc_area()
+            outward = (1 if volume > 0 else -1) if abs(volume) > 1e-4 * area ** 1.5 else 1
+            outward *= handed
+            out += [i for i in comp
+                    if abs(wind[i]) > FLIP_EPS and wind[i] * parity[i] * outward < 0]
+        return [faces[i] for i in sorted(out)]
 
     def islands(self):
         uv = self.uv

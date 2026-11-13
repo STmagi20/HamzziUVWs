@@ -13,8 +13,9 @@ def unwrapped_object(kind="cube"):
     bm = bmesh.new()
     if kind == "cube":
         bmesh.ops.create_cube(bm, size=2.0)
-    else:                                   # one 8-sided face
-        bmesh.ops.create_circle(bm, cap_ends=True, radius=1.0, segments=8)
+    else:                                   # a cylinder: eight quads and two 8-sided caps
+        bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=8,
+                              radius1=1.0, radius2=1.0, depth=2.0)
     me = bpy.data.meshes.new(kind)
     bm.to_mesh(me)
     bm.free()
@@ -61,6 +62,62 @@ class FlippedFaces(unittest.TestCase):
                 mirror_faces(ob, [1, 4])
                 self.assertEqual(flipped_indices(), [1, 4])
                 helpers.leave_edit()
+
+    def test_normal_direction_does_not_matter(self):
+        # a model whose normals all point inward but whose texture reads correctly
+        ob = self._edit()
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.flip_normals()
+        self.assertEqual(flipped_indices(), [])
+        mirror_faces(ob, [1])
+        self.assertEqual(flipped_indices(), [1])
+
+    def test_one_face_with_a_reversed_normal_is_not_flipped(self):
+        ob = self._edit()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bm = bmesh.from_edit_mesh(ob.data)
+        bm.faces.ensure_lookup_table()
+        bm.faces[2].select_set(True)
+        bmesh.update_edit_mesh(ob.data)
+        bpy.ops.mesh.flip_normals()
+        self.assertEqual(flipped_indices(), [])
+
+    def test_each_separate_piece_is_judged_from_its_own_outside(self):
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=2.0)
+        r = bmesh.ops.create_cube(bm, size=2.0)
+        bmesh.ops.translate(bm, vec=(5, 0, 0), verts=r["verts"])
+        me = bpy.data.meshes.new("two")
+        bm.to_mesh(me)
+        bm.free()
+        ob = helpers.link(bpy.data.objects.new("two", me))
+        helpers.enter_edit([ob], sync=True)
+        bpy.ops.uv.smart_project()
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bm = bmesh.from_edit_mesh(ob.data)
+        bm.faces.ensure_lookup_table()
+        for f in bm.faces[6:]:                  # the second cube gets inward normals
+            f.select_set(True)
+        bmesh.update_edit_mesh(ob.data)
+        bpy.ops.mesh.flip_normals()
+        self.assertEqual(flipped_indices(), [])
+        mirror_faces(ob, range(6, 12))          # and then all of it is mirrored
+        self.assertEqual(flipped_indices(), list(range(6, 12)))
+        mirror_faces(ob, [7])                   # one face of it back again
+        self.assertEqual(flipped_indices(), [6, 8, 9, 10, 11])
+
+    def test_faces_without_uv_area_are_not_reported(self):
+        ob = self._edit()
+        bm = bmesh.from_edit_mesh(ob.data)
+        uv = bm.loops.layers.uv.active
+        bm.faces.ensure_lookup_table()
+        loops = bm.faces[1].loops
+        cx = sum(l[uv].uv.x for l in loops) / 4
+        cy = sum(l[uv].uv.y for l in loops) / 4
+        for l in loops:                         # mirrored and almost collapsed
+            l[uv].uv = (cx - (l[uv].uv.x - cx) * 1e-4, cy + (l[uv].uv.y - cy) * 1e-4)
+        bmesh.update_edit_mesh(ob.data)
+        self.assertEqual(flipped_indices(), [])
 
     def test_hidden_faces_are_not_reported(self):
         ob = self._edit()
@@ -128,7 +185,9 @@ class FlippedGeometry(unittest.TestCase):
     def test_an_ngon_is_split_into_n_minus_2_triangles(self):
         ob = self._edit("ngon")
         self.assertEqual(overlay.flipped_geometry(bpy.context, 1000), [])
-        mirror_faces(ob, [0])
+        bm = bmesh.from_edit_mesh(ob.data)
+        cap = next(f.index for f in bm.faces if len(f.verts) == 8)
+        mirror_faces(ob, [cap])
         self.assertEqual(len(overlay.flipped_geometry(bpy.context, 1000)) // 3, 6)
 
     def test_over_the_face_limit_returns_none(self):
