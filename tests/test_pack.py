@@ -22,9 +22,7 @@ class PackIntoTile(unittest.TestCase):
 
     def pack(self, rects, margin, fit):
         helpers.enter_edit([helpers.quads_object(rects)])
-        s = helpers.settings()
-        s.pack_margin, s.pack_fit = margin, fit
-        return bpy.ops.uved.pack_to_tile()
+        return bpy.ops.uved.pack_to_tile(margin=margin, fit=fit)
 
     def test_scale_to_fit_stays_inside_the_margins(self):
         for n, margin in ((6, 0.05), (25, 0.02), (25, 0.05), (25, 0.1), (40, 0.05), (3, 0.25)):
@@ -41,8 +39,7 @@ class PackIntoTile(unittest.TestCase):
     def test_islands_keep_their_proportions(self):
         helpers.enter_edit([helpers.quads_object(random_rects(8))])
         before = sorted((b[2] - b[0]) / (b[3] - b[1]) for b in (i.bounds() for i in helpers.islands()))
-        helpers.settings().pack_margin = 0.02
-        self.assertEqual(bpy.ops.uved.pack_to_tile(), {'FINISHED'})
+        self.assertEqual(bpy.ops.uved.pack_to_tile(margin=0.02), {'FINISHED'})
         after = sorted((b[2] - b[0]) / (b[3] - b[1]) for b in (i.bounds() for i in helpers.islands()))
         for a, b in zip(before, after):
             self.assertAlmostEqual(a, b, places=5)
@@ -54,6 +51,29 @@ class PackIntoTile(unittest.TestCase):
     def test_without_scale_to_fit_oversized_islands_are_refused(self):
         rects = [((n * 2, 0, 0), (n * 2.0, 0, 0.6, 0.6)) for n in range(3)]
         self.assertEqual(self.pack(rects, 0.0, False), {'CANCELLED'})
+
+    def test_tile_option_packs_into_that_tile(self):
+        helpers.enter_edit([helpers.quads_object(random_rects(6))])
+        self.assertEqual(bpy.ops.uved.pack_to_tile(margin=0.05, tile_u=2, tile_v=1), {'FINISHED'})
+        for x0, y0, x1, y1 in (i.bounds() for i in helpers.islands()):
+            self.assertGreaterEqual(x0, 2.05 - 1e-6)
+            self.assertLessEqual(x1, 2.95 + 1e-6)
+            self.assertGreaterEqual(y0, 1.05 - 1e-6)
+            self.assertLessEqual(y1, 1.95 + 1e-6)
+
+
+class PackOptions(unittest.TestCase):
+    """The button copies the panel values into the operator (invoke). A background Blender
+    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
+
+    def test_operator_defaults_match_the_panel_defaults(self):
+        helpers.fresh()
+        panel = helpers.settings().bl_rna.properties
+        op = bpy.ops.uved.pack_to_tile.get_rna_type().properties
+        for mine, theirs in (("margin", "pack_margin"), ("fit", "pack_fit"),
+                             ("tile_u", "tile_u"), ("tile_v", "tile_v")):
+            with self.subTest(option=mine):
+                self.assertEqual(op[mine].default, panel[theirs].default)
 
 
 if __name__ == "__main__":

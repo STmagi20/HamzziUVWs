@@ -6,7 +6,7 @@
 import math
 
 import numpy as np
-from bpy.props import EnumProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty
 from bpy.types import Operator
 
 from ..core import EPS, EditOp, finish, group_bounds, targets, targets_or_warn
@@ -172,12 +172,29 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
                       "starting at its lower-left corner. Islands are not rotated and all "
                       "get the same scale, so the texel density ratio is kept")
 
-    def execute(self, context):
+    # Own copies of the panel values, so they can be changed in the Adjust Last Operation
+    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    margin: FloatProperty(
+        name="Margin", default=0.0, min=0.0, max=0.25, precision=4,
+        description="Space left between the islands and along the tile border, in UV units")
+    fit: BoolProperty(
+        name="Scale to Fit", default=True,
+        description="Resize all islands by the same factor so they fill the tile. "
+                    "When off, islands keep their size and are only moved")
+    tile_u: IntProperty(name="U", default=0, description="UDIM tile column to pack into")
+    tile_v: IntProperty(name="V", default=0, description="UDIM tile row to pack into")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.margin, self.fit = s.pack_margin, s.pack_fit
+        self.tile_u, self.tile_v = s.tile_u, s.tile_v
+        return self.execute(context)
+
+    def execute(self, context):
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
-        m = s.pack_margin
+        m = self.margin
         info = []
         for i in isl:
             x0, y0, x1, y1 = i.bounds()
@@ -187,7 +204,7 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
         sizes = [(t[3], t[4]) for t in info]
 
         k, pos = 1.0, None
-        if s.pack_fit:
+        if self.fit:
             room = 1.0 - 2 * m
             hi = min(room / max(w for w, _ in sizes), room / max(h for _, h in sizes))
             # a single row is a quick lower bound; when the gaps alone fill it, fall back
@@ -206,7 +223,7 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
         else:
             pos = _shelf_layout(sizes, 1.0, m)
         if pos is None:
-            if s.pack_fit:
+            if self.fit:
                 self.report({'WARNING'}, "The margin is too large for this many islands - lower the margin")
             else:
                 self.report({'WARNING'}, "The islands do not fit in one tile - enable Scale to Fit "
@@ -214,7 +231,7 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
             return {'CANCELLED'}
 
         for (i, x0, y0, _, _), (px, py) in zip(info, pos):
-            tx, ty = s.tile_u + px, s.tile_v + py
+            tx, ty = self.tile_u + px, self.tile_v + py
             i.apply(lambda x, y, x0=x0, y0=y0, tx=tx, ty=ty: (tx + (x - x0) * k, ty + (y - y0) * k))
         finish(objs)
         self.report({'INFO'}, f"Packed {len(info)} island(s) at {k:.3f}x scale")
