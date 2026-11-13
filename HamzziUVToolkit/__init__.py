@@ -9,6 +9,7 @@ Element tools: align / distribute selected UV vertices (straighten edges).
 Stitch       : Stitch Selected - join selected UV edges to their neighbour
                islands (bias / align / scale options, like 3ds Max Unwrap UVW).
 Unstretch    : relax selected UVs (pinned re-solve) and toggle the stretch overlay.
+Flipped      : fill the faces that are mirrored in UV space and select them.
 Connected    : in the UV editor, shows where the selected UV edges / faces / vertices
                continue on other islands (like the blue edges in 3ds Max).
 
@@ -20,14 +21,14 @@ visible island is used.
 if "bpy" in locals():
     # the add-on was reloaded in a running Blender: refresh the submodules too
     import importlib
-    for _m in (info, icons, core, properties, islands, density, elements, stitch, relax, overlay, ui):
+    for _m in (info, icons, core, properties, islands, density, elements, stitch, relax, flipped, overlay, ui):
         importlib.reload(_m)
 
 import bpy
 from bpy.props import PointerProperty
 
 from . import core, icons, info, overlay, properties, ui
-from .operators import density, elements, islands, relax, stitch
+from .operators import density, elements, flipped, islands, relax, stitch
 
 classes = (
     properties.UVED_Settings,
@@ -39,6 +40,7 @@ classes = (
     elements.UVED_OT_align_elements, elements.UVED_OT_distribute_elements,
     stitch.UVED_OT_stitch_selected,
     relax.UVED_OT_relax, relax.UVED_OT_toggle_stretch,
+    flipped.UVED_OT_select_flipped,
 ) + ui.panel_classes
 
 

@@ -9,6 +9,8 @@ import bmesh
 import bpy
 import gpu
 from gpu_extras.batch import batch_for_shader
+from mathutils import Vector
+from mathutils.geometry import tessellate_polygon
 
 from .core import EPS, UVObject, edit_objects
 
@@ -82,6 +84,51 @@ def link_geometry(context, limit):
     return lines, points
 
 
+def flipped_geometry(context, limit):
+    """Triangles (flat list of (u, v), three per triangle) that cover the faces mirrored in
+    UV space. Returns None over the face limit."""
+    ts = context.tool_settings
+    m = ts.mesh_select_mode
+    face_mode = bool(m[2]) and not m[0] and not m[1]
+    objs = []
+    total = 0
+    for ob in edit_objects(context):
+        bm = bmesh.from_edit_mesh(ob.data)
+        if bm.loops.layers.uv.active is None:
+            continue
+        total += len(bm.faces)
+        if total > limit:
+            return None
+        objs.append(UVObject(ob, ts.use_uv_select_sync, face_mode))
+
+    tris = []
+    for o in objs:
+        uv = o.uv
+        for f in o.flipped_faces():
+            p = [l[uv].uv.copy() for l in f.loops]
+            if len(p) <= 4:                  # triangles and quads: a fan is exact for convex faces
+                for i in range(1, len(p) - 1):
+                    tris += [(p[0].x, p[0].y), (p[i].x, p[i].y), (p[i + 1].x, p[i + 1].y)]
+            else:                            # n-gons may be concave: let Blender split them
+                poly = [Vector((q.x, q.y, 0.0)) for q in p]
+                for a, b, c in tessellate_polygon([poly]):
+                    tris += [(p[a].x, p[a].y), (p[b].x, p[b].y), (p[c].x, p[c].y)]
+    return tris
+
+
+def draw_fill(region, tris, color):
+    """Fill UV-space triangles in a UV editor region (POST_PIXEL)."""
+    to_px = region.view2d.view_to_region
+    pos = [to_px(u, v, clip=False) for u, v in tris]
+    gpu.state.blend_set('ALPHA')
+    sh = gpu.shader.from_builtin('UNIFORM_COLOR')
+    batch = batch_for_shader(sh, 'TRIS', {"pos": pos})
+    sh.bind()
+    sh.uniform_float("color", color)
+    batch.draw(sh)
+    gpu.state.blend_set('NONE')
+
+
 def draw_link_batches(region, lines, points, color, width):
     """Draw UV-space lines / points in a UV editor region (POST_PIXEL)."""
     to_px = region.view2d.view_to_region
@@ -123,12 +170,16 @@ def _draw():
             return
         s = context.scene.uved
         sp = context.space_data
-        if not s.show_links or sp is None or sp.type != 'IMAGE_EDITOR' or not sp.show_uvedit:
+        if sp is None or sp.type != 'IMAGE_EDITOR' or not sp.show_uvedit:
             return
-        geo = link_geometry(context, s.link_limit)
-        if not geo or not (geo[0] or geo[1]):
-            return
-        draw_link_batches(context.region, geo[0], geo[1], tuple(s.link_color), s.link_width)
+        if s.show_flipped:
+            tris = flipped_geometry(context, s.link_limit)
+            if tris:
+                draw_fill(context.region, tris, tuple(s.flipped_color))
+        if s.show_links:
+            geo = link_geometry(context, s.link_limit)
+            if geo and (geo[0] or geo[1]):
+                draw_link_batches(context.region, geo[0], geo[1], tuple(s.link_color), s.link_width)
     except Exception:       # a draw callback must never raise
         if not _error_logged:
             # print the first failure to the system console so it can be found;

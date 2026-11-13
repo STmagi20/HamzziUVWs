@@ -11,6 +11,7 @@ import numpy as np
 from mathutils import Vector
 
 EPS = 1e-5
+FLIP_EPS = 1e-12      # twice the UV area below which a face counts as having no area
 
 
 def edit_objects(context):
@@ -52,6 +53,13 @@ class UVObject:
 
     def update(self):
         bmesh.update_edit_mesh(self.ob.data, loop_triangles=False, destructive=False)
+
+    def flipped_faces(self):
+        """Visible faces whose UV outline runs clockwise, i.e. the face is mirrored in UV
+        space. Faces with no UV area are not counted."""
+        uv = self.uv
+        return [f for f in self.bm.faces
+                if self.visible(f) and face_winding(f, uv) < -FLIP_EPS]
 
     def islands(self):
         uv = self.uv

@@ -33,6 +33,13 @@ class UVED_Settings(PropertyGroup):
         name="Face Limit", default=10000, min=100, soft_max=500000,
         description="Skip the display when more faces than this are in Edit Mode, "
                     "to keep the UV editor responsive")
+    show_flipped: BoolProperty(
+        name="Show Flipped Faces", default=False, update=_redraw_uv_editors,
+        description="In the UV editor, fill the faces that are mirrored in UV space "
+                    "(their UV outline runs clockwise) with a color")
+    flipped_color: FloatVectorProperty(
+        name="Color", subtype='COLOR', size=4, min=0.0, max=1.0,
+        default=(1.0, 0.15, 0.15, 0.45), update=_redraw_uv_editors)
     align_relative: EnumProperty(
         name="Align To", default='SELECTION',
         items=[('SELECTION', "Selection", "Bounds of the selected islands"),
