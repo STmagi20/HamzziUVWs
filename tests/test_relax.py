@@ -59,8 +59,22 @@ class RelaxGrid(unittest.TestCase):
         for v in bm.verts:
             v.select_set(not interior_only or (abs(v.co.x) < 0.999 and abs(v.co.y) < 0.999))
         bm.select_flush_mode()
+        if not sync:
+            self.select_all_uvs(bm, uv)
         bmesh.update_edit_mesh(ob.data)
         return ob
+
+    @staticmethod
+    def select_all_uvs(bm, uv):
+        # without UV sync the UV editor keeps its own selection, which starts out empty
+        for f in bm.faces:
+            for l in f.loops:
+                if hasattr(l, "uv_select_vert_set"):            # Blender 5.x
+                    l.uv_select_vert_set(True)
+                    l.uv_select_edge_set(True)
+                else:                                          # Blender 4.x
+                    l[uv].select = True
+                    l[uv].select_edge = True
 
     def border_indices(self, pts):
         o = np.array(self.OFFSET)
