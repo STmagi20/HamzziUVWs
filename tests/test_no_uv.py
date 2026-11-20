@@ -14,7 +14,7 @@ CALLS = [
     ("orient_to_edge", {}), ("scale_islands", {}), ("get_density", {}),
     ("set_density", {"source": 'AVERAGE'}), ("align_elements", {"mode": 'U_AVG'}),
     ("distribute_elements", {"axis": 'U'}),
-    ("straighten_edges", {}), ("stitch_selected", {}), ("relax", {}),
+    ("straighten_edges", {}), ("stitch_selected", {}), ("detach_selected", {}), ("relax", {}),
 ]
 
 

@@ -118,6 +118,7 @@ def _ui_stitch(layout, s):
     r.prop(s, "stitch_align", text="Align", toggle=True)
     r.prop(s, "stitch_scale", text="Scale", toggle=True)
     layout.operator("uved.stitch_selected", icon='AUTOMERGE_ON')
+    layout.operator("uved.detach_selected", icon='AUTOMERGE_OFF')
 
 
 def _ui_unstretch(layout, s):

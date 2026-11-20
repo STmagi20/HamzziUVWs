@@ -240,3 +240,71 @@ class UVED_OT_stitch_selected(EditOp, Operator):
             return {'CANCELLED'}
         self.report({'INFO'}, f"Stitched {stitched} edge(s)")
         return {'FINISHED'}
+
+
+def _cut_edges(o, isl):
+    """Mesh edges inside the island whose UV edge is selected."""
+    inside = set(isl.faces)
+    cut = set()
+    for e in isl.joined:
+        if any(o.selected(x) and o.selected(x.link_loop_next) for x in e.link_loops
+               if x.face in inside):
+            cut.add(e)
+    return cut
+
+
+def _split_pieces(isl, cut):
+    """Face groups of an island that stay joined once the `cut` edges are separated."""
+    sets = UnionFind()
+    for f in isl.faces:
+        sets.find(f)
+    for e in isl.joined:
+        if e not in cut:
+            fs = [f for f in e.link_faces if f in isl.faces]
+            for f in fs[1:]:
+                sets.union(fs[0], f)
+    return list(sets.groups().values())
+
+
+class UVED_OT_detach_selected(EditOp, Operator):
+    bl_idname = "uved.detach_selected"
+    bl_label = "Detach Selected"
+    bl_description = ("Cut an island apart along the selected UV edges (the opposite of Stitch). "
+                      "The pieces move away from each other so the cut shows")
+
+    distance: FloatProperty(
+        name="Gap", default=0.02, min=0.0, soft_max=0.2, precision=3,
+        description="How far apart the pieces end up, in UV units")
+
+    def execute(self, context):
+        objs = gather(context)
+        uv_of = {}
+        done = 0
+        for o in objs:
+            for isl in o.islands():
+                cut = _cut_edges(o, isl)
+                if not cut:
+                    continue
+                pieces = _split_pieces(isl, cut)
+                if len(pieces) < 2:
+                    continue
+                pts = isl.pts()
+                mid = pts.mean(axis=0)
+                for faces in pieces:
+                    loops = [l for f in faces for l in f.loops]
+                    c = np.array([tuple(l[o.uv].uv) for l in loops], dtype=float).mean(axis=0)
+                    away = c - mid
+                    n = float(np.hypot(away[0], away[1]))
+                    if n < EPS:
+                        continue            # a piece in the middle stays where it is
+                    dx, dy = away / n * (self.distance / 2.0)
+                    for l in loops:
+                        l[o.uv].uv = (l[o.uv].uv.x + dx, l[o.uv].uv.y + dy)
+                done += 1
+        if not done:
+            self.report({'WARNING'}, "Select UV edges that cut an island in two (the cut has to "
+                                     "reach the border of the island)")
+            return {'CANCELLED'}
+        finish(objs)
+        self.report({'INFO'}, f"Detached {done} island(s)")
+        return {'FINISHED'}
