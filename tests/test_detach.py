@@ -39,6 +39,14 @@ class Detach(unittest.TestCase):
         left, right = sorted(isl, key=lambda i: i.center()[0])
         self.assertAlmostEqual(left.bounds()[2] + 0.1, right.bounds()[0], places=5)
 
+    def test_smallest_gap_still_splits_the_island(self):
+        # a Gap of 0 would leave the pieces joined in UV space, so the lowest value
+        # (0 is raised to it) must still give two islands
+        ob = grid()
+        select_verts(ob, lambda v: abs(v.co.x) < 1e-6)
+        self.assertEqual(bpy.ops.uved.detach_selected(distance=0.0), {'FINISHED'})
+        self.assertEqual(len(helpers.islands()), 2)
+
     def test_cut_that_does_not_reach_the_border_is_refused(self):
         ob = grid()
         select_verts(ob, lambda v: abs(v.co.x) < 1e-6 and v.co.y <= 1e-6)   # the lower half of the column

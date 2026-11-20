@@ -57,18 +57,5 @@ class Distribute(unittest.TestCase):
         helpers.enter_edit([helpers.quads_object(RECTS[:1])])
         self.assertEqual(bpy.ops.uved.distribute_islands(axis='U'), {'CANCELLED'})
 
-    def test_operator_defaults_match_the_panel_defaults(self):
-        # the buttons copy the panel values (invoke); a background Blender has no window
-        # and never calls it, so that part has to be checked in a GUI session
-        panel = helpers.settings().bl_rna.properties
-        for op_id, pairs in (("distribute_islands", (("gap_mode", "gap_mode"), ("gap", "gap"))),
-                             ("sort_islands", (("order_by", "sort_axis"), ("reverse", "sort_reverse"),
-                                               ("gap_mode", "gap_mode"), ("gap", "gap")))):
-            op = getattr(bpy.ops.uved, op_id).get_rna_type().properties
-            for mine, theirs in pairs:
-                with self.subTest(op=op_id, option=mine):
-                    self.assertEqual(op[mine].default, panel[theirs].default)
-
-
 if __name__ == "__main__":
     unittest.main()

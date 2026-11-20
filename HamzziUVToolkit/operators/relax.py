@@ -106,15 +106,29 @@ def _run_unwrap(context, method):
     Called from inside the UV editor, Blender's unwrap works from the UV selection and
     the existing UVs and returns a different, distorted result (a square face came back
     as a kite). From any other editor it solves from the 3D shape, which is what Relax
-    needs. The buttons sit in the UV editor sidebar, so step out of that area here."""
-    win = context.window
-    areas = list(win.screen.areas) if win else []
-    area = (next((a for a in areas if a.type == 'VIEW_3D'), None)
-            or next((a for a in areas if a.type != 'IMAGE_EDITOR'), None))
+    needs. The buttons sit in the UV editor sidebar, so step out of that area here.
+
+    Returns (result, distorted): `distorted` is True when no other editor was open in any
+    window and the unwrap had to run inside the UV editor after all."""
+    win, area = unwrap_area(context.window, context.window_manager.windows)
     if area is None:
-        return bpy.ops.uv.unwrap(method=method, fill_holes=True, margin=0.0)
-    with context.temp_override(window=win, area=area):
-        return bpy.ops.uv.unwrap(method=method, fill_holes=True, margin=0.0)
+        res = bpy.ops.uv.unwrap(method=method, fill_holes=True, margin=0.0)
+        here = context.area
+        return res, here is not None and here.type == 'IMAGE_EDITOR'
+    with context.temp_override(window=win, screen=win.screen, area=area):
+        return bpy.ops.uv.unwrap(method=method, fill_holes=True, margin=0.0), False
+
+
+def unwrap_area(current, windows):
+    """(window, area) to run the unwrap from: a 3D viewport, else any editor that is not
+    an image / UV editor; the current window first. (None, None) when there is none."""
+    wins = ([current] if current is not None else []) + [w for w in windows if w != current]
+    for wanted in (lambda a: a.type == 'VIEW_3D', lambda a: a.type != 'IMAGE_EDITOR'):
+        for w in wins:
+            for a in w.screen.areas:
+                if wanted(a):
+                    return w, a
+    return None, None
 
 
 def _make_plans(objs, pin_boundary):
@@ -249,7 +263,7 @@ class UVED_OT_relax(EditOp, Operator):
                       "longer stretched. Unselected and pinned UVs stay where they are")
 
     # Own copies of the panel values, so they can be changed in the Adjust Last Operation
-    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    # panel after the run. Pressing the button starts them from the panel (panel_values).
     method: EnumProperty(
         name="Method", default='ANGLE_BASED',
         items=[('ANGLE_BASED', "Angle Based", "Preserves angles, good general choice"),
@@ -263,10 +277,11 @@ class UVED_OT_relax(EditOp, Operator):
         name="Amount", default=1.0, min=0.0, max=1.0, subtype='FACTOR',
         description="How far to move toward the relaxed result (1 = fully relaxed)")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.method, self.pin_boundary, self.blend = s.relax_method, s.relax_pin_boundary, s.relax_blend
-        return self.execute(context)
+    panel_values = (
+        ("method", "relax_method"),
+        ("pin_boundary", "relax_pin_boundary"),
+        ("blend", "relax_blend"),
+    )
 
     def execute(self, context):
         ts = context.tool_settings
@@ -290,10 +305,13 @@ class UVED_OT_relax(EditOp, Operator):
         try:
             _prepare_unwrap(objs, plans)
             ts.use_uv_select_sync = True
-            res = _run_unwrap(context, self.method)
+            res, distorted = _run_unwrap(context, self.method)
             if 'FINISHED' not in res:
                 self.report({'WARNING'}, "Relax failed")
                 return {'CANCELLED'}
+            if distorted:
+                self.report({'WARNING'}, "No 3D Viewport is open, so the result may be distorted - "
+                                         "open one in any window and run Relax again")
             failed = _apply_result(objs, plans, self.blend)
             ok = failed < len(plans)
             if failed or closed:

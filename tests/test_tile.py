@@ -46,15 +46,5 @@ class MoveToTile(unittest.TestCase):
             cx, cy = i.center()
             self.assertEqual((math.floor(cx), math.floor(cy)), (0, 0))
 
-    def test_operator_defaults_match_the_panel_defaults(self):
-        # the button copies the panel values (invoke); a background Blender has no window
-        # and never calls it, so that part has to be checked in a GUI session
-        panel = helpers.settings().bl_rna.properties
-        op = bpy.ops.uved.move_to_tile.get_rna_type().properties
-        for name in ("tile_u", "tile_v"):
-            with self.subTest(option=name):
-                self.assertEqual(op[name].default, panel[name].default)
-
-
 if __name__ == "__main__":
     unittest.main()

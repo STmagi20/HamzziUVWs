@@ -495,6 +495,7 @@ Relax / Unstretch を押した直後は、Blender の左下（または Edit →
 | Relax could not solve N island(s): they have no open UV border; they were left unchanged | UV に開いた境界がないアイランドです（すべてのエッジがくっついています）。ほぐせないのでそのままにしました。seam を作って UV を 1 か所以上切り、開いた境界を作ってからもう一度試してください。 |
 | Relax could not solve N island(s); they were left unchanged | ほぐしに失敗したアイランドはそのままにしました。選択範囲を狭めるか、アイランドを分けてもう一度試してください。 |
 | Relax failed | Blender の展開計算が失敗しました。選択範囲を狭めてもう一度試してください。 |
+| No 3D Viewport is open, so the result may be distorted - open one in any window and run Relax again | どのウィンドウにも UV エディター以外のエディターがなかったため、Blender の展開を UV エディターの中で実行しました。この場合、結果がゆがむことがあります。どこかのウィンドウで 3D ビューポートを開き、Ctrl+Z で戻してからもう一度実行してください。 |
 | Could not restore selection / seams / pins on (オブジェクト名) - press Ctrl+Z | Relax が終わったあと、そのオブジェクトの選択、seam、ピンを元に戻せませんでした。Ctrl+Z で元に戻してから、もう一度試してください。 |
 | No UV editor is open | Show Stretch は UV エディターが開いている必要があります。 |
 

@@ -205,7 +205,7 @@ class UVED_OT_stitch_selected(EditOp, Operator):
                       "'selected' one")
 
     # Own copies of the panel values, so they can be changed in the Adjust Last Operation
-    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    # panel after the run. Pressing the button starts them from the panel (panel_values).
     bias: FloatProperty(
         name="Bias", default=0.0, min=0.0, max=1.0, subtype='FACTOR',
         description="0 = the selected island stays and the neighbour moves, "
@@ -218,10 +218,7 @@ class UVED_OT_stitch_selected(EditOp, Operator):
         name="Scale Clusters", default=True,
         description="Scale the moving island so the edges have the same length")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.bias, self.align, self.scale = s.stitch_bias, s.stitch_align, s.stitch_scale
-        return self.execute(context)
+    panel_values = (("bias", "stitch_bias"), ("align", "stitch_align"), ("scale", "stitch_scale"))
 
     def execute(self, context):
         objs = gather(context)
@@ -272,13 +269,14 @@ class UVED_OT_detach_selected(EditOp, Operator):
     bl_description = ("Cut an island apart along the selected UV edges (the opposite of Stitch). "
                       "The pieces move away from each other so the cut shows")
 
+    # Never 0: pieces left in place would still share their UV edges and count as one
+    # island again, so nothing would be detached
     distance: FloatProperty(
-        name="Gap", default=0.02, min=0.0, soft_max=0.2, precision=3,
+        name="Gap", default=0.02, min=0.001, soft_max=0.2, precision=3,
         description="How far apart the pieces end up, in UV units")
 
     def execute(self, context):
         objs = gather(context)
-        uv_of = {}
         done = 0
         for o in objs:
             for isl in o.islands():

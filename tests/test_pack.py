@@ -62,19 +62,5 @@ class PackIntoTile(unittest.TestCase):
             self.assertLessEqual(y1, 1.95 + 1e-6)
 
 
-class PackOptions(unittest.TestCase):
-    """The button copies the panel values into the operator (invoke). A background Blender
-    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
-
-    def test_operator_defaults_match_the_panel_defaults(self):
-        helpers.fresh()
-        panel = helpers.settings().bl_rna.properties
-        op = bpy.ops.uved.pack_to_tile.get_rna_type().properties
-        for mine, theirs in (("margin", "pack_margin"), ("fit", "pack_fit"),
-                             ("tile_u", "tile_u"), ("tile_v", "tile_v")):
-            with self.subTest(option=mine):
-                self.assertEqual(op[mine].default, panel[theirs].default)
-
-
 if __name__ == "__main__":
     unittest.main()

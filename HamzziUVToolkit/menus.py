@@ -12,6 +12,7 @@ import bpy
 from bpy.types import Menu
 
 from .info import ADDON_NAME
+from .ui import op_button
 
 # (operator, keymap name) pairs that get an empty keymap slot
 KEYMAP_SLOTS = (
@@ -20,13 +21,6 @@ KEYMAP_SLOTS = (
 )
 
 _slots = []
-
-
-def _op(layout, idname, text, icon='NONE', **props):
-    o = layout.operator(idname, text=text, icon=icon)
-    for k, v in props.items():
-        setattr(o, k, v)
-    return o
 
 
 class UVED_MT_menu(Menu):
@@ -38,30 +32,30 @@ class UVED_MT_menu(Menu):
         lay.label(text="Islands")
         for mode, text in (('LEFT', "Align Left"), ('CENTER_H', "Align Center"), ('RIGHT', "Align Right"),
                            ('BOTTOM', "Align Bottom"), ('CENTER_V', "Align Middle"), ('TOP', "Align Top")):
-            _op(lay, "uved.align_islands", text, mode=mode)
+            op_button(lay, "uved.align_islands", text, mode=mode)
         lay.separator()
-        _op(lay, "uved.distribute_islands", "Distribute U", axis='U')
-        _op(lay, "uved.distribute_islands", "Distribute V", axis='V')
-        _op(lay, "uved.sort_islands", "Sort U", axis='U')
-        _op(lay, "uved.sort_islands", "Sort V", axis='V')
+        op_button(lay, "uved.distribute_islands", "Distribute U", axis='U')
+        op_button(lay, "uved.distribute_islands", "Distribute V", axis='V')
+        op_button(lay, "uved.sort_islands", "Sort U", axis='U')
+        op_button(lay, "uved.sort_islands", "Sort V", axis='V')
         lay.separator()
         lay.operator("uved.move_to_tile", text="Move to Tile")
         lay.operator("uved.pack_to_tile", text="Pack into Tile", icon='MOD_ARRAY')
         lay.separator()
         lay.label(text="Transform")
-        _op(lay, "uved.transform_islands", "Rotate 90° CCW", mode='CCW90')
-        _op(lay, "uved.transform_islands", "Rotate 90° CW", mode='CW90')
-        _op(lay, "uved.transform_islands", "Rotate 180°", mode='ROT180')
-        _op(lay, "uved.transform_islands", "Flip H", mode='FLIP_H')
-        _op(lay, "uved.transform_islands", "Flip V", mode='FLIP_V')
-        _op(lay, "uved.auto_orient", "Auto H", target='HORIZONTAL')
-        _op(lay, "uved.auto_orient", "Auto V", target='VERTICAL')
+        op_button(lay, "uved.transform_islands", "Rotate 90° CCW", mode='CCW90')
+        op_button(lay, "uved.transform_islands", "Rotate 90° CW", mode='CW90')
+        op_button(lay, "uved.transform_islands", "Rotate 180°", mode='ROT180')
+        op_button(lay, "uved.transform_islands", "Flip H", mode='FLIP_H')
+        op_button(lay, "uved.transform_islands", "Flip V", mode='FLIP_V')
+        op_button(lay, "uved.auto_orient", "Auto H", target='HORIZONTAL')
+        op_button(lay, "uved.auto_orient", "Auto V", target='VERTICAL')
         lay.operator("uved.orient_to_edge", text="Orient to Edge")
         lay.separator()
         lay.label(text="Texel Density")
-        _op(lay, "uved.set_density", "Apply Target", source='VALUE')
-        _op(lay, "uved.set_density", "Equalize", source='AVERAGE')
-        _op(lay, "uved.set_density", "Match Active", source='ACTIVE')
+        op_button(lay, "uved.set_density", "Apply Target", source='VALUE')
+        op_button(lay, "uved.set_density", "Equalize", source='AVERAGE')
+        op_button(lay, "uved.set_density", "Match Active", source='ACTIVE')
         lay.separator()
         lay.label(text="UV Vertices")
         lay.operator("uved.straighten_edges", text="Straighten", icon='IPO_LINEAR')

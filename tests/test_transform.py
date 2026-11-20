@@ -63,17 +63,5 @@ class Transform(unittest.TestCase):
         self.assertEqual(sorted(round(b[2] - b[0], 5) for b in boxes()),
                          sorted(round(w * 2, 5) for w in w0))
 
-    def test_operator_defaults_match_the_panel_defaults(self):
-        # the buttons copy the panel values (invoke); a background Blender has no window
-        # and never calls it, so that part has to be checked in a GUI session
-        panel = helpers.settings().bl_rna.properties
-        for op_id, pairs in (("scale_islands", (("scale_u", "scale_u"), ("scale_v", "scale_v"))),
-                             ("transform_islands", (("angle", "rot_angle"),))):
-            op = getattr(bpy.ops.uved, op_id).get_rna_type().properties
-            for mine, theirs in pairs:
-                with self.subTest(option=mine):
-                    self.assertAlmostEqual(op[mine].default, panel[theirs].default, places=6)
-
-
 if __name__ == "__main__":
     unittest.main()

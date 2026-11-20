@@ -87,10 +87,7 @@ class UVED_OT_distribute_islands(EditOp, Operator):
     gap_mode: _gap_mode()
     gap: _gap()
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.gap_mode, self.gap = s.gap_mode, s.gap
-        return self.execute(context)
+    panel_values = (("gap_mode", "gap_mode"), ("gap", "gap"))
 
     def draw(self, context):
         _draw_gap(self)
@@ -139,11 +136,12 @@ class UVED_OT_sort_islands(EditOp, Operator):
     gap_mode: _gap_mode()
     gap: _gap()
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.order_by, self.reverse = s.sort_axis, s.sort_reverse
-        self.gap_mode, self.gap = s.gap_mode, s.gap
-        return self.execute(context)
+    panel_values = (
+        ("order_by", "sort_axis"),
+        ("reverse", "sort_reverse"),
+        ("gap_mode", "gap_mode"),
+        ("gap", "gap"),
+    )
 
     def draw(self, context):
         row = self.layout.row(align=True)
@@ -188,10 +186,7 @@ class UVED_OT_move_to_tile(EditOp, Operator):
     tile_u: IntProperty(name="U", default=0, description="UDIM tile column to move into")
     tile_v: IntProperty(name="V", default=0, description="UDIM tile row to move into")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.tile_u, self.tile_v = s.tile_u, s.tile_v
-        return self.execute(context)
+    panel_values = (("tile_u", "tile_u"), ("tile_v", "tile_v"))
 
     def execute(self, context):
         objs, isl = targets_or_warn(self, context)
@@ -231,7 +226,7 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
                       "get the same scale, so the texel density ratio is kept")
 
     # Own copies of the panel values, so they can be changed in the Adjust Last Operation
-    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    # panel after the run. Pressing the button starts them from the panel (panel_values).
     margin: FloatProperty(
         name="Margin", default=0.0, min=0.0, max=0.25, precision=4,
         description="Space left between the islands and along the tile border, in UV units")
@@ -242,11 +237,12 @@ class UVED_OT_pack_to_tile(EditOp, Operator):
     tile_u: IntProperty(name="U", default=0, description="UDIM tile column to pack into")
     tile_v: IntProperty(name="V", default=0, description="UDIM tile row to pack into")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.margin, self.fit = s.pack_margin, s.pack_fit
-        self.tile_u, self.tile_v = s.tile_u, s.tile_v
-        return self.execute(context)
+    panel_values = (
+        ("margin", "pack_margin"),
+        ("fit", "pack_fit"),
+        ("tile_u", "tile_u"),
+        ("tile_v", "tile_v"),
+    )
 
     def execute(self, context):
         objs, isl = targets_or_warn(self, context)
@@ -307,10 +303,7 @@ class UVED_OT_scale_islands(EditOp, Operator):
     scale_v: FloatProperty(name="V", default=1.0, min=0.001, soft_max=10.0,
                            description="Multiply island height by this factor")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.scale_u, self.scale_v = s.scale_u, s.scale_v
-        return self.execute(context)
+    panel_values = (("scale_u", "scale_u"), ("scale_v", "scale_v"))
 
     def execute(self, context):
         objs, isl = targets_or_warn(self, context)
@@ -334,9 +327,7 @@ class UVED_OT_transform_islands(EditOp, Operator):
     angle: FloatProperty(name="Angle", default=math.radians(15.0), subtype='ANGLE',
                          description="Counter-clockwise rotation of each island")
 
-    def invoke(self, context, event):
-        self.angle = context.scene.uved.rot_angle
-        return self.execute(context)
+    panel_values = (("angle", "rot_angle"),)
 
     def draw(self, context):
         if self.mode == 'ANGLE':

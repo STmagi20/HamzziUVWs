@@ -9,7 +9,8 @@ from . import icons
 from .info import ADDON_AUTHOR, ADDON_NAME, ADDON_VERSION
 
 
-def _op(layout, idname, text, icon='NONE', **props):
+def op_button(layout, idname, text, icon='NONE', **props):
+    """An operator button with its properties set (the sidebar panels and the UV menu)."""
     o = layout.operator(idname, text=text, icon=icon)
     for k, v in props.items():
         setattr(o, k, v)
@@ -27,7 +28,7 @@ def _ui_align(layout, s):
     g = _icon_grid(layout)
     for icon, mode in (('ALIGN_LEFT', 'LEFT'), ('ALIGN_CENTER', 'CENTER_H'), ('ALIGN_RIGHT', 'RIGHT'),
                        ('ALIGN_BOTTOM', 'BOTTOM'), ('ALIGN_MIDDLE', 'CENTER_V'), ('ALIGN_TOP', 'TOP')):
-        _op(g, "uved.align_islands", "", icon, mode=mode)
+        op_button(g, "uved.align_islands", "", icon, mode=mode)
 
 
 def _ui_distribute(layout, s):
@@ -35,15 +36,15 @@ def _ui_distribute(layout, s):
     if s.gap_mode == 'FIXED':
         layout.prop(s, "gap")
     r = layout.row(align=True)
-    _op(r, "uved.distribute_islands", "Distribute U", axis='U')
-    _op(r, "uved.distribute_islands", "Distribute V", axis='V')
+    op_button(r, "uved.distribute_islands", "Distribute U", axis='U')
+    op_button(r, "uved.distribute_islands", "Distribute V", axis='V')
     layout.separator()
     r = layout.row(align=True)
     r.prop(s, "sort_axis", expand=True)
     r.prop(s, "sort_reverse", text="", icon='ARROW_LEFTRIGHT', toggle=True)
     r = layout.row(align=True)
-    _op(r, "uved.sort_islands", "Sort U", axis='U')
-    _op(r, "uved.sort_islands", "Sort V", axis='V')
+    op_button(r, "uved.sort_islands", "Sort U", axis='U')
+    op_button(r, "uved.sort_islands", "Sort V", axis='V')
 
 
 def _ui_tile(layout, s):
@@ -61,19 +62,19 @@ def _ui_tile(layout, s):
 def _ui_rotate(layout, s):
     c = layout.column(align=True)
     r = c.row(align=True)
-    _op(r, "uved.transform_islands", "90°", 'LOOP_BACK', mode='CCW90')
-    _op(r, "uved.transform_islands", "90°", 'LOOP_FORWARDS', mode='CW90')
-    _op(r, "uved.transform_islands", "180°", mode='ROT180')
+    op_button(r, "uved.transform_islands", "90°", 'LOOP_BACK', mode='CCW90')
+    op_button(r, "uved.transform_islands", "90°", 'LOOP_FORWARDS', mode='CW90')
+    op_button(r, "uved.transform_islands", "180°", mode='ROT180')
     r = c.row(align=True)
-    _op(r, "uved.transform_islands", "Flip H", mode='FLIP_H')
-    _op(r, "uved.transform_islands", "Flip V", mode='FLIP_V')
+    op_button(r, "uved.transform_islands", "Flip H", mode='FLIP_H')
+    op_button(r, "uved.transform_islands", "Flip V", mode='FLIP_V')
     _ui_flipped(layout, s)
     r = layout.row(align=True)
     r.prop(s, "rot_angle", text="")
-    _op(r, "uved.transform_islands", "Rotate", mode='ANGLE')
+    op_button(r, "uved.transform_islands", "Rotate", mode='ANGLE')
     r = layout.row(align=True)
-    _op(r, "uved.auto_orient", "Auto H", target='HORIZONTAL')
-    _op(r, "uved.auto_orient", "Auto V", target='VERTICAL')
+    op_button(r, "uved.auto_orient", "Auto H", target='HORIZONTAL')
+    op_button(r, "uved.auto_orient", "Auto V", target='VERTICAL')
     r.operator("uved.orient_to_edge", text="To Edge")
     layout.separator()
     _ui_scale(layout, s)
@@ -87,9 +88,9 @@ def _ui_density(layout, s):
     if s.readout:
         layout.label(text=s.readout, icon='INFO')
     r = layout.row(align=True)
-    _op(r, "uved.set_density", "Apply", source='VALUE')
-    _op(r, "uved.set_density", "Equalize", source='AVERAGE')
-    _op(r, "uved.set_density", "Active", source='ACTIVE')
+    op_button(r, "uved.set_density", "Apply", source='VALUE')
+    op_button(r, "uved.set_density", "Equalize", source='AVERAGE')
+    op_button(r, "uved.set_density", "Active", source='ACTIVE')
 
 
 def _ui_scale(layout, s):
@@ -105,10 +106,10 @@ def _ui_vertices(layout, s):
     g = _icon_grid(layout)
     for icon, mode in (('ALIGN_LEFT', 'U_MIN'), ('ALIGN_CENTER', 'U_AVG'), ('ALIGN_RIGHT', 'U_MAX'),
                        ('ALIGN_BOTTOM', 'V_MIN'), ('ALIGN_MIDDLE', 'V_AVG'), ('ALIGN_TOP', 'V_MAX')):
-        _op(g, "uved.align_elements", "", icon, mode=mode)
+        op_button(g, "uved.align_elements", "", icon, mode=mode)
     r = layout.row(align=True)
-    _op(r, "uved.distribute_elements", "Distribute U", axis='U')
-    _op(r, "uved.distribute_elements", "Distribute V", axis='V')
+    op_button(r, "uved.distribute_elements", "Distribute U", axis='U')
+    op_button(r, "uved.distribute_elements", "Distribute V", axis='V')
     layout.operator("uved.straighten_edges", text="Straighten", icon='IPO_LINEAR')
 
 

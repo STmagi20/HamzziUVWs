@@ -57,7 +57,7 @@ class UVED_OT_set_density(EditOp, Operator):
         }[properties.source] + ". Islands are resized around their own center and may overlap"
 
     # Own copies of the panel values, so they can be changed in the Adjust Last Operation
-    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    # panel after the run. Pressing the button starts them from the panel (panel_values).
     # Equalize and Active copy a density measured from the UVs, so only Target Value
     # offers anything to adjust.
     texture_size: IntProperty(
@@ -67,10 +67,7 @@ class UVED_OT_set_density(EditOp, Operator):
         name="Target (px/m)", default=512.0, min=0.0, soft_max=8192.0,
         description="Texture pixels per metre of 3D surface")
 
-    def invoke(self, context, event):
-        s = context.scene.uved
-        self.texture_size, self.target_density = s.texture_size, s.target_density
-        return self.execute(context)
+    panel_values = (("texture_size", "texture_size"), ("target_density", "target_density"))
 
     def draw(self, context):
         if self.source == 'VALUE':

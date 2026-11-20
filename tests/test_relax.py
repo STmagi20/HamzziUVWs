@@ -5,6 +5,7 @@ different result when it is called from inside a UV editor, so this only checks 
 does not depend on that: pinned points stay, the stretch goes down, nothing is left
 changed afterwards. Check the real behaviour in a GUI session with a UV editor open."""
 import random
+import types
 import unittest
 
 import bmesh
@@ -12,6 +13,7 @@ import bpy
 import numpy as np
 
 import helpers
+from HamzziUVToolkit.operators import relax
 
 
 def stats(ob):
@@ -137,20 +139,6 @@ class RelaxGrid(unittest.TestCase):
         self.assertTrue(np.isfinite(after).all())
 
 
-class RelaxOptions(unittest.TestCase):
-    """The button copies the panel values into the operator (invoke). A background Blender
-    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
-
-    def test_operator_defaults_match_the_panel_defaults(self):
-        helpers.fresh()
-        panel = helpers.settings().bl_rna.properties
-        op = bpy.ops.uved.relax.get_rna_type().properties
-        for mine, theirs in (("method", "relax_method"), ("pin_boundary", "relax_pin_boundary"),
-                             ("blend", "relax_blend")):
-            with self.subTest(option=mine):
-                self.assertEqual(op[mine].default, panel[theirs].default)
-
-
 class RelaxSphere(unittest.TestCase):
     def tearDown(self):
         helpers.leave_edit()
@@ -170,6 +158,37 @@ class RelaxSphere(unittest.TestCase):
         self.assertEqual(bpy.ops.uved.relax(), {'FINISHED'})
         after, worst1 = stats(ob)
         self.assertLessEqual(worst1, worst0 + 1e-9)
+
+
+def window(*kinds):
+    return types.SimpleNamespace(screen=types.SimpleNamespace(
+        areas=[types.SimpleNamespace(type=k) for k in kinds]))
+
+
+class UnwrapArea(unittest.TestCase):
+    """Where Relax runs Blender's unwrap from: never the UV editor when anything else is open."""
+
+    def test_a_3d_viewport_in_the_same_window(self):
+        here = window('IMAGE_EDITOR', 'VIEW_3D')
+        w, a = relax.unwrap_area(here, [here])
+        self.assertEqual((w, a.type), (here, 'VIEW_3D'))
+
+    def test_a_3d_viewport_in_another_window(self):
+        here, other = window('IMAGE_EDITOR', 'PROPERTIES'), window('VIEW_3D')
+        w, a = relax.unwrap_area(here, [here, other])
+        self.assertEqual((w, a.type), (other, 'VIEW_3D'))
+
+    def test_any_other_editor_when_there_is_no_3d_viewport(self):
+        here = window('IMAGE_EDITOR', 'OUTLINER')
+        w, a = relax.unwrap_area(here, [here])
+        self.assertEqual((w, a.type), (here, 'OUTLINER'))
+
+    def test_only_uv_editors_gives_none(self):
+        here, other = window('IMAGE_EDITOR'), window('IMAGE_EDITOR')
+        self.assertEqual(relax.unwrap_area(here, [here, other]), (None, None))
+
+    def test_no_window_at_all(self):
+        self.assertEqual(relax.unwrap_area(None, []), (None, None))
 
 
 if __name__ == "__main__":

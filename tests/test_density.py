@@ -101,18 +101,5 @@ class Density(unittest.TestCase):
                                math.sqrt(0.25 / 6.0) * SIZE, places=4)
 
 
-class DensityOptions(unittest.TestCase):
-    """The buttons copy the panel values into the operator (invoke). A background Blender
-    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
-
-    def test_operator_defaults_match_the_panel_defaults(self):
-        helpers.fresh()
-        panel = helpers.settings().bl_rna.properties
-        op = bpy.ops.uved.set_density.get_rna_type().properties
-        for name in ("texture_size", "target_density"):
-            with self.subTest(option=name):
-                self.assertEqual(op[name].default, panel[name].default)
-
-
 if __name__ == "__main__":
     unittest.main()

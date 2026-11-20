@@ -495,6 +495,7 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 | Relax could not solve N island(s): they have no open UV border; they were left unchanged | UV에 열린 경계가 없는 아일랜드입니다(모든 엣지가 붙어 있음). 풀 수 없어서 그대로 두었습니다. seam을 만들어 UV를 한 곳 이상 갈라서 열린 경계를 만든 뒤 다시 시도하세요. |
 | Relax could not solve N island(s); they were left unchanged | 풀기에 실패한 아일랜드는 그대로 두었습니다. 선택 범위를 줄이거나 아일랜드를 나눠서 다시 시도하세요. |
 | Relax failed | Blender의 펼치기 계산이 실패했습니다. 선택 범위를 줄여서 다시 시도하세요. |
+| No 3D Viewport is open, so the result may be distorted - open one in any window and run Relax again | 어느 창에도 UV 에디터 말고 다른 편집기가 없어서, Blender 펼치기를 UV 에디터 안에서 실행했습니다. 이때 Blender는 결과를 찌그러뜨릴 수 있습니다. 아무 창에나 3D 뷰포트를 열고 Ctrl+Z로 되돌린 뒤 다시 실행하세요. |
 | Could not restore selection / seams / pins on (오브젝트 이름) - press Ctrl+Z | Relax가 끝난 뒤 그 오브젝트의 선택, seam, 핀을 원래대로 돌리지 못했습니다. Ctrl+Z로 되돌린 뒤 다시 시도하세요. |
 | No UV editor is open | Show Stretch는 UV 에디터가 열려 있어야 합니다. |
 

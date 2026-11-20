@@ -270,6 +270,11 @@ def _needs_uv_map(run):
 class EditOp:
     bl_options = {'REGISTER', 'UNDO'}
 
+    # (operator property, panel property) pairs. The operator keeps its own copy of these
+    # panel values so they can be changed in the Adjust Last Operation panel after the
+    # run; pressing the button starts them from the panel (invoke).
+    panel_values = ()
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         run = cls.__dict__.get("execute")
@@ -279,6 +284,16 @@ class EditOp:
     @classmethod
     def poll(cls, context):
         return context.mode == 'EDIT_MESH' and len(edit_objects(context)) > 0
+
+    def copy_panel_values(self, settings):
+        """Set this operator's options from the panel settings (scene.uved). Kept apart
+        from invoke so the tests can run it: a background Blender never calls invoke."""
+        for mine, theirs in self.panel_values:
+            setattr(self, mine, getattr(settings, theirs))
+
+    def invoke(self, context, event):
+        self.copy_panel_values(context.scene.uved)
+        return self.execute(context)
 
 
 def face_winding(face, uv):

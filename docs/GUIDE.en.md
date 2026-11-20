@@ -495,6 +495,7 @@ These are the messages that appear in the status bar at the bottom of the screen
 | Relax could not solve N island(s): they have no open UV border; they were left unchanged | The island has no open UV border (every edge is joined). It cannot be relaxed and was left as it is. Add seams to split the UV in at least one place so there is an open border, then try again. |
 | Relax could not solve N island(s); they were left unchanged | Islands where relaxing failed were left as they are. Reduce the selection or split the island and try again. |
 | Relax failed | Blender's unwrap calculation failed. Reduce the selection and try again. |
+| No 3D Viewport is open, so the result may be distorted - open one in any window and run Relax again | No window had any editor other than UV Editors, so Blender's unwrap had to run inside the UV Editor, where it can distort the result. Open a 3D Viewport in any window, press Ctrl+Z and run Relax again. |
 | Could not restore selection / seams / pins on (object name) - press Ctrl+Z | After Relax finished, the selection, seams or pins of that object could not be put back. Press Ctrl+Z to undo and try again. |
 | No UV editor is open | Show Stretch needs a UV Editor to be open. |
 

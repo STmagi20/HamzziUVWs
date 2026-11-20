@@ -30,7 +30,7 @@ class UVED_Settings(PropertyGroup):
     link_width: FloatProperty(
         name="Line Width", default=3.0, min=1.0, max=10.0, update=_redraw_uv_editors)
     link_limit: IntProperty(
-        name="Face Limit", default=10000, min=100, soft_max=500000,
+        name="Face Limit", default=10000, min=100, soft_max=500000, update=_redraw_uv_editors,
         description="Skip the display when more faces than this are in Edit Mode, "
                     "to keep the UV editor responsive")
     show_flipped: BoolProperty(
