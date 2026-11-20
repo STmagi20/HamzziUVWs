@@ -57,22 +57,14 @@ class UVED_OT_align_islands(EditOp, Operator):
         if s.align_relative == 'TILE':
             tx, ty = math.floor((x0 + x1) / 2), math.floor((y0 + y1) / 2)
             x0, y0, x1, y1 = tx, ty, tx + 1, ty + 1
+        # axis, then where each island's (low edge, high edge) goes: low, high or middle
+        k, side = {'LEFT': (0, 0.0), 'CENTER_H': (0, 0.5), 'RIGHT': (0, 1.0),
+                   'BOTTOM': (1, 0.0), 'CENTER_V': (1, 0.5), 'TOP': (1, 1.0)}[self.mode]
+        box = (x0, y0, x1, y1)
+        target = box[k] + (box[k + 2] - box[k]) * side
         for i in isl:
-            a, b, c, d = i.bounds()
-            dx = dy = 0.0
-            if self.mode == 'LEFT':
-                dx = x0 - a
-            elif self.mode == 'RIGHT':
-                dx = x1 - c
-            elif self.mode == 'BOTTOM':
-                dy = y0 - b
-            elif self.mode == 'TOP':
-                dy = y1 - d
-            elif self.mode == 'CENTER_H':
-                dx = (x0 + x1) / 2 - (a + c) / 2
-            elif self.mode == 'CENTER_V':
-                dy = (y0 + y1) / 2 - (b + d) / 2
-            i.translate(dx, dy)
+            b = i.bounds()
+            i.shift(k, target - (b[k] + (b[k + 2] - b[k]) * side))
         finish(objs)
         return {'FINISHED'}
 
@@ -109,8 +101,7 @@ class UVED_OT_distribute_islands(EditOp, Operator):
             gap = self.gap
         pos = info[0][0]
         for lo, hi, i in info:
-            d = pos - lo
-            i.translate(d, 0) if k == 0 else i.translate(0, d)
+            i.shift(k, pos - lo)
             pos += (hi - lo) + gap
         finish(objs)
         return {'FINISHED'}
@@ -169,8 +160,9 @@ class UVED_OT_sort_islands(EditOp, Operator):
             gap = max(((box[k + 2] - box[k]) - sum(widths)) / (len(order) - 1), 0.0)
         pos = start
         for i, b, w in zip(order, size, widths):
-            along, across = pos - b[k], base - b[1 - k]
-            i.translate(along, across) if k == 0 else i.translate(across, along)
+            d = [0.0, 0.0]
+            d[k], d[1 - k] = pos - b[k], base - b[1 - k]
+            i.translate(*d)
             pos += w + gap
         finish(objs)
         return {'FINISHED'}
@@ -348,20 +340,15 @@ class UVED_OT_transform_islands(EditOp, Operator):
         objs, isl = targets_or_warn(self, context)
         if not isl:
             return {'CANCELLED'}
+        flip = {'FLIP_H': (-1, 1), 'FLIP_V': (1, -1)}.get(self.mode)
+        angle = {'CW90': -math.pi / 2, 'CCW90': math.pi / 2, 'ROT180': math.pi,
+                 'ANGLE': self.angle}.get(self.mode)
         for i in isl:
             cx, cy = i.center()
-            if self.mode == 'CW90':
-                i.rotate(-math.pi / 2, cx, cy)
-            elif self.mode == 'CCW90':
-                i.rotate(math.pi / 2, cx, cy)
-            elif self.mode == 'ROT180':
-                i.rotate(math.pi, cx, cy)
-            elif self.mode == 'ANGLE':
-                i.rotate(self.angle, cx, cy)
-            elif self.mode == 'FLIP_H':
-                i.scale(-1, 1, cx, cy)
-            elif self.mode == 'FLIP_V':
-                i.scale(1, -1, cx, cy)
+            if flip:
+                i.scale(*flip, cx, cy)
+            else:
+                i.rotate(angle, cx, cy)
         finish(objs)
         return {'FINISHED'}
 

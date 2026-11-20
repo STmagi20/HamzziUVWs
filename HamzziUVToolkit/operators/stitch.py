@@ -10,7 +10,7 @@ from bpy.props import BoolProperty, FloatProperty
 from bpy.types import Operator
 from mathutils import Vector
 
-from ..core import EPS, EditOp, UnionFind, face_winding, finish, gather
+from ..core import EPS, EditOp, Island, UnionFind, face_winding, finish, gather
 
 
 def _fit_fn(src, dst, align, scale):
@@ -286,18 +286,14 @@ class UVED_OT_detach_selected(EditOp, Operator):
                 pieces = _split_pieces(isl, cut)
                 if len(pieces) < 2:
                     continue
-                pts = isl.pts()
-                mid = pts.mean(axis=0)
+                mid = isl.pts().mean(axis=0)
                 for faces in pieces:
-                    loops = [l for f in faces for l in f.loops]
-                    c = np.array([tuple(l[o.uv].uv) for l in loops], dtype=float).mean(axis=0)
-                    away = c - mid
+                    piece = Island(o, faces)
+                    away = piece.pts().mean(axis=0) - mid
                     n = float(np.hypot(away[0], away[1]))
                     if n < EPS:
                         continue            # a piece in the middle stays where it is
-                    dx, dy = away / n * (self.distance / 2.0)
-                    for l in loops:
-                        l[o.uv].uv = (l[o.uv].uv.x + dx, l[o.uv].uv.y + dy)
+                    piece.translate(*(away / n * (self.distance / 2.0)))
                 done += 1
         if not done:
             self.report({'WARNING'}, "Select UV edges that cut an island in two (the cut has to "

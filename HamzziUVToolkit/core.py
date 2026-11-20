@@ -167,6 +167,10 @@ class Island:
     def translate(self, dx, dy):
         self.apply(lambda x, y: (x + dx, y + dy))
 
+    def shift(self, k, d):
+        """Move by d along U (k = 0) or V (k = 1)."""
+        self.translate(d, 0.0) if k == 0 else self.translate(0.0, d)
+
     def scale(self, sx, sy, cx, cy):
         self.apply(lambda x, y: (cx + (x - cx) * sx, cy + (y - cy) * sy))
 

@@ -22,6 +22,36 @@ def _selected_loops(context):
     return objs, out
 
 
+def _spot(o, l):
+    """Key shared by the UV corners of one object that sit at the same UV position."""
+    p = l[o.uv].uv
+    return id(o), round(p.x / EPS), round(p.y / EPS)
+
+
+def _group_by_spot(sel):
+    groups = {}
+    for o, l in sel:
+        groups.setdefault(_spot(o, l), []).append((o, l))
+    return groups
+
+
+def _uv(entry):
+    o, l = entry
+    return l[o.uv].uv
+
+
+def _coord(entry, k):
+    return _uv(entry)[k]
+
+
+def _set_coord(entries, k, t):
+    """Put coordinate k (0 = U, 1 = V) of every (object, loop) in `entries` at t."""
+    for o, l in entries:
+        p = l[o.uv].uv.copy()
+        p[k] = t
+        l[o.uv].uv = p
+
+
 class UVED_OT_align_elements(EditOp, Operator):
     bl_idname = "uved.align_elements"
     bl_label = "Align UV Vertices"
@@ -47,13 +77,10 @@ class UVED_OT_align_elements(EditOp, Operator):
             self.report({'WARNING'}, "Select at least two UV vertices")
             return {'CANCELLED'}
         k = 0 if self.mode.startswith('U') else 1
-        vals = [l[o.uv].uv[k] for o, l in sel]
+        vals = [_coord(e, k) for e in sel]
         kind = self.mode[2:]
         t = min(vals) if kind == 'MIN' else max(vals) if kind == 'MAX' else sum(vals) / len(vals)
-        for o, l in sel:
-            p = l[o.uv].uv.copy()
-            p[k] = t
-            l[o.uv].uv = p
+        _set_coord(sel, k, t)
         finish(objs)
         return {'FINISHED'}
 
@@ -68,22 +95,14 @@ class UVED_OT_distribute_elements(EditOp, Operator):
     def execute(self, context):
         objs, sel = _selected_loops(context)
         k = 0 if self.axis == 'U' else 1
-        groups = {}
-        for o, l in sel:
-            p = l[o.uv].uv
-            groups.setdefault((id(o), round(p.x / EPS), round(p.y / EPS)), []).append((o, l))
+        groups = _group_by_spot(sel)
         if len(groups) < 3:
             self.report({'WARNING'}, "Select at least three UV vertices")
             return {'CANCELLED'}
-        keyed = sorted(groups.values(), key=lambda g: g[0][1][g[0][0].uv].uv[k])
-        lo = keyed[0][0][1][keyed[0][0][0].uv].uv[k]
-        hi = keyed[-1][0][1][keyed[-1][0][0].uv].uv[k]
+        keyed = sorted(groups.values(), key=lambda g: _coord(g[0], k))
+        lo, hi = _coord(keyed[0][0], k), _coord(keyed[-1][0], k)
         for n, g in enumerate(keyed):
-            t = lo + (hi - lo) * n / (len(keyed) - 1)
-            for o, l in g:
-                p = l[o.uv].uv.copy()
-                p[k] = t
-                l[o.uv].uv = p
+            _set_coord(g, k, lo + (hi - lo) * n / (len(keyed) - 1))
         finish(objs)
         return {'FINISHED'}
 
@@ -93,18 +112,14 @@ def _chains(sel):
     edge. Returns (chains, skipped): each chain is a list of positions from one end to
     the other, `skipped` counts connected pieces that are not a plain line (a loop or
     a branch)."""
-    corners = {}
-    for o, l in sel:
-        p = l[o.uv].uv
-        corners.setdefault((id(o), round(p.x / EPS), round(p.y / EPS)), []).append((o, l))
+    corners = _group_by_spot(sel)
     links = {k: set() for k in corners}
     for key, group in corners.items():
         for o, l in group:
             nxt = l.link_loop_next
             if not o.selected(nxt):
                 continue
-            p = nxt[o.uv].uv
-            other = (id(o), round(p.x / EPS), round(p.y / EPS))
+            other = _spot(o, nxt)
             if other != key and other in links:
                 links[key].add(other)
                 links[other].add(key)
@@ -143,7 +158,7 @@ class UVED_OT_straighten_edges(EditOp, Operator):
         chains, skipped = _chains(sel)
         moved = 0
         for chain in chains:
-            pts = [g[0][1][g[0][0].uv].uv.copy() for g in chain]
+            pts = [_uv(g[0]).copy() for g in chain]
             seg = [(b - a).length for a, b in zip(pts, pts[1:])]
             total = sum(seg)
             if total < EPS:

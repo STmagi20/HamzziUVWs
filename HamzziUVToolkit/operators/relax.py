@@ -53,6 +53,12 @@ def _save_mesh_state(o):
     return st
 
 
+def _deselect_all(bm):
+    for seq in (bm.verts, bm.edges, bm.faces):
+        for x in seq:
+            x.select_set(False)
+
+
 def _restore_mesh_state(o, st):
     bm = bmesh.from_edit_mesh(o.ob.data)
     o.bm = bm
@@ -61,21 +67,13 @@ def _restore_mesh_state(o, st):
     bm.edges.ensure_lookup_table()
     bm.verts.ensure_lookup_table()
     bm.select_mode = st["mode"]
-    for v in bm.verts:
-        v.select_set(False)
-    for e in bm.edges:
-        e.select_set(False)
-    for f in bm.faces:
-        f.select_set(False)
-    for v, s in zip(bm.verts, st["v"]):
-        if s:
-            v.select_set(True)
-    for e, s in zip(bm.edges, st["e"]):
-        if s:
-            e.select_set(True)
-    for f, s in zip(bm.faces, st["f"]):
-        if s:
-            f.select_set(True)
+    _deselect_all(bm)
+    # select only (never deselect) in this pass: deselecting a face or edge would also
+    # clear vertices that a neighbour still needs
+    for seq, flags in ((bm.verts, st["v"]), (bm.edges, st["e"]), (bm.faces, st["f"])):
+        for x, s in zip(seq, flags):
+            if s:
+                x.select_set(True)
     for e, s in zip(bm.edges, st["seam"]):
         e.seam = s
     for f, pins in zip(bm.faces, st["pin"]):
@@ -89,11 +87,11 @@ def _restore_mesh_state(o, st):
         # vertex flags go last, in a pass of their own
         for f, (fs, ls) in zip(bm.faces, st["uvsel"]):
             f.uv_select_set(fs)
-        for f, (fs, ls) in zip(bm.faces, st["uvsel"]):
-            for l, (sv, se) in zip(f.loops, ls):
+        for f, (_, ls) in zip(bm.faces, st["uvsel"]):
+            for l, (_, se) in zip(f.loops, ls):
                 l.uv_select_edge_set(se)
-        for f, (fs, ls) in zip(bm.faces, st["uvsel"]):
-            for l, (sv, se) in zip(f.loops, ls):
+        for f, (_, ls) in zip(bm.faces, st["uvsel"]):
+            for l, (sv, _) in zip(f.loops, ls):
                 l.uv_select_vert_set(sv)
         if st["uv_sync"]:
             bm.uv_select_sync_valid = True
@@ -183,12 +181,7 @@ def _prepare_unwrap(objs, plans):
         if o.uv_sync:
             # the unwrap below must follow the mesh selection we set up
             o.bm.uv_select_sync_valid = False
-        for v in o.bm.verts:
-            v.select_set(False)
-        for e in o.bm.edges:
-            e.select_set(False)
-        for f in o.bm.faces:
-            f.select_set(False)
+        _deselect_all(o.bm)
     for p in plans:
         bm, uv = p["o"].bm, p["o"].uv
         for fi in p["faces"]:
