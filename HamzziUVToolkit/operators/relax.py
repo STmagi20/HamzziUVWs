@@ -8,6 +8,7 @@ import traceback
 import bmesh
 import bpy
 import numpy as np
+from bpy.props import BoolProperty, EnumProperty, FloatProperty
 from bpy.types import Operator
 
 from ..core import EditOp, face_winding, gather
@@ -247,13 +248,32 @@ class UVED_OT_relax(EditOp, Operator):
     bl_description = ("Re-solve the selected UV vertices from the 3D shape so they are no "
                       "longer stretched. Unselected and pinned UVs stay where they are")
 
-    def execute(self, context):
+    # Own copies of the panel values, so they can be changed in the Adjust Last Operation
+    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    method: EnumProperty(
+        name="Method", default='ANGLE_BASED',
+        items=[('ANGLE_BASED', "Angle Based", "Preserves angles, good general choice"),
+               ('CONFORMAL', "Conformal", "Preserves shape, may change scale")])
+    pin_boundary: BoolProperty(
+        name="Pin Boundary", default=True,
+        description="Keep the outline of each island where it is and relax only the inner "
+                    "vertices, so islands do not change shape or overlap. When off, the whole "
+                    "selection is re-solved from the 3D shape and put back by best fit")
+    blend: FloatProperty(
+        name="Amount", default=1.0, min=0.0, max=1.0, subtype='FACTOR',
+        description="How far to move toward the relaxed result (1 = fully relaxed)")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.method, self.pin_boundary, self.blend = s.relax_method, s.relax_pin_boundary, s.relax_blend
+        return self.execute(context)
+
+    def execute(self, context):
         ts = context.tool_settings
         objs = gather(context)
         saved = {o.ob.name: _save_mesh_state(o) for o in objs}
 
-        plans, closed, outline_only = _make_plans(objs, s.relax_pin_boundary)
+        plans, closed, outline_only = _make_plans(objs, self.pin_boundary)
         if not plans:
             if closed:
                 self.report({'WARNING'}, f"Relax could not solve {closed} island(s): they have no "
@@ -270,11 +290,11 @@ class UVED_OT_relax(EditOp, Operator):
         try:
             _prepare_unwrap(objs, plans)
             ts.use_uv_select_sync = True
-            res = _run_unwrap(context, s.relax_method)
+            res = _run_unwrap(context, self.method)
             if 'FINISHED' not in res:
                 self.report({'WARNING'}, "Relax failed")
                 return {'CANCELLED'}
-            failed = _apply_result(objs, plans, s.relax_blend)
+            failed = _apply_result(objs, plans, self.blend)
             ok = failed < len(plans)
             if failed or closed:
                 self.report({'WARNING'}, f"Relax could not solve {failed + closed} island(s); "

@@ -307,6 +307,8 @@ Stitch Selected를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → Adj
 2. Method와 Amount를 정합니다.
 3. **Relax / Unstretch**를 누릅니다.
 
+Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → Adjust Last Operation)의 조정 패널에서 Method, Pin Boundary, Amount를 바꿔 결과를 보면서 다듬을 수 있습니다. 패널의 설정값은 바뀌지 않고, 누를 때마다 패널 값으로 다시 시작합니다.
+
 <img src="images/relax.png" alt="Relax 전후" width="720">
 
 | 설정 | 동작 |

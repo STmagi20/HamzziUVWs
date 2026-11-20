@@ -117,6 +117,39 @@ class RelaxGrid(unittest.TestCase):
         self.assertEqual(sorted(e.index for e in bm.edges if e.seam), seams)
         self.assertFalse(any(l[bm.loops.layers.uv.active].pin_uv for f in bm.faces for l in f.loops))
 
+    def test_amount_option_moves_less_than_a_full_relax(self):
+        moved = {}
+        for amount in (0.5, 1.0):
+            helpers.leave_edit()
+            ob = self.jittered_grid(True)
+            before, _ = stats(ob)
+            self.assertEqual(bpy.ops.uved.relax(blend=amount), {'FINISHED'})
+            after, _ = stats(ob)
+            moved[amount] = float(np.abs(after - before).sum())
+        self.assertGreater(moved[1.0], 0.0)
+        self.assertLess(moved[0.5], moved[1.0])
+
+    def test_pin_boundary_option(self):
+        ob = self.jittered_grid(False)
+        before, _ = stats(ob)
+        self.assertEqual(bpy.ops.uved.relax(pin_boundary=False, method='CONFORMAL'), {'FINISHED'})
+        after, worst1 = stats(ob)
+        self.assertTrue(np.isfinite(after).all())
+
+
+class RelaxOptions(unittest.TestCase):
+    """The button copies the panel values into the operator (invoke). A background Blender
+    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
+
+    def test_operator_defaults_match_the_panel_defaults(self):
+        helpers.fresh()
+        panel = helpers.settings().bl_rna.properties
+        op = bpy.ops.uved.relax.get_rna_type().properties
+        for mine, theirs in (("method", "relax_method"), ("pin_boundary", "relax_pin_boundary"),
+                             ("blend", "relax_blend")):
+            with self.subTest(option=mine):
+                self.assertEqual(op[mine].default, panel[theirs].default)
+
 
 class RelaxSphere(unittest.TestCase):
     def tearDown(self):
