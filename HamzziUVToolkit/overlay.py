@@ -5,6 +5,7 @@
 
 import traceback
 
+import blf
 import bmesh
 import bpy
 import gpu
@@ -157,6 +158,17 @@ def draw_link_batches(region, lines, points, color, width):
     gpu.state.blend_set('NONE')
 
 
+def draw_notice(region, lines):
+    """Lines of text in the top left corner of a UV editor region (POST_PIXEL), to the right
+    of the tool shelf."""
+    font = 0
+    blf.size(font, 13.0)
+    blf.color(font, 1.0, 0.75, 0.25, 1.0)
+    for n, text in enumerate(lines):
+        blf.position(font, 80.0, region.height - 24.0 - 18.0 * n, 0.0)
+        blf.draw(font, text)
+
+
 def _draw():
     global _error_logged
     context = bpy.context
@@ -172,14 +184,23 @@ def _draw():
         sp = context.space_data
         if sp is None or sp.type != 'IMAGE_EDITOR' or not sp.show_uvedit:
             return
+        skipped = []
         if s.show_flipped:
             tris = flipped_geometry(context, s.link_limit)
-            if tris:
+            if tris is None:
+                skipped.append("Flipped Faces")
+            elif tris:
                 draw_fill(context.region, tris, tuple(s.flipped_color))
         if s.show_links:
             geo = link_geometry(context, s.link_limit)
-            if geo and (geo[0] or geo[1]):
+            if geo is None:
+                skipped.append("Connected Edges")
+            elif geo[0] or geo[1]:
                 draw_link_batches(context.region, geo[0], geo[1], tuple(s.link_color), s.link_width)
+        if skipped:
+            draw_notice(context.region, (
+                f"Hamzzi UV Toolkit: {', '.join(skipped)} not shown",
+                f"More than {s.link_limit} faces - raise Face Limit in the Connected Edges panel"))
     except Exception:       # a draw callback must never raise
         if not _error_logged:
             # print the first failure to the system console so it can be found;

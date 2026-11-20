@@ -67,7 +67,7 @@
 - Unstretch는 브러시가 아니라 선택 영역에 한 번에 적용됩니다.
 - 구처럼 평평하게 펼 수 없는 형태를 강제로 펴는 기능은 아직 없습니다.
 - Pack into Tile은 아일랜드의 경계 상자를 기준으로 배치하고 회전하지 않습니다. 복잡한 모양을 빈틈없이 끼워 넣으려면 Blender의 Pack Islands가 더 촘촘하게 배치합니다.
-- Connected Edges는 Edit Mode의 면이 Face Limit(기본 1만 개)을 넘으면 표시를 건너뜁니다.
+- Connected Edges는 Edit Mode의 면이 Face Limit(기본 1만 개)을 넘으면 표시를 건너뛰고, UV 에디터에 안내 문구를 띄웁니다.
 - 패널의 버튼 이름은 영어입니다.
 
 ## 개발
