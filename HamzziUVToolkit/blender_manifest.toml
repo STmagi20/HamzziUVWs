@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "hamzzi_uv_toolkit"
-version = "1.1.4"
+version = "1.2.0"
 name = "Hamzzi UV Toolkit"
 tagline = "Align, sort, pack, stitch and relax existing UV islands"
 maintainer = "StudyingHamzzi"
