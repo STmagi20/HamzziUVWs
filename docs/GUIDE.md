@@ -1,5 +1,7 @@
 # Hamzzi UV Toolkit 사용 가이드
 
+**한국어** | [English](GUIDE.en.md) | [日本語](GUIDE.ja.md)
+
 Hamzzi UV Toolkit은 이미 펼친 UV를 다듬는 Blender 애드온입니다. 사이드바 버튼으로 아일랜드 정렬과 배치, 이음선 붙이기, 늘어진 UV 풀기, 텍셀 밀도 맞추기를 할 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
 
 <p align="center"><img src="images/Ham_Body_UV_small.png" alt="Hamzzi UV Toolkit" width="270"></p>
@@ -23,7 +25,8 @@ Hamzzi UV Toolkit은 이미 펼친 UV를 다듬는 Blender 애드온입니다. �
    - [메뉴와 단축키](#메뉴와-단축키)
 5. [작업 예시](#작업-예시)
 6. [경고 메시지와 문제 해결](#경고-메시지와-문제-해결)
-7. [알려진 한계](#알려진-한계)
+7. [버그와 문의](#버그와-문의)
+8. [알려진 한계](#알려진-한계)
 
 ## 설치
 
@@ -71,6 +74,7 @@ Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래
 | 늘어지거나 찌그러진 UV 풀기 | Unstretch |
 | UV가 거꾸로 놓인(뒤집힌) 면 찾기 | Transform (Show Flipped) |
 | 선택한 엣지의 짝이 있는 위치 확인 | Connected Edges |
+| 사이드바 없이 UV 메뉴나 단축키로 실행 | [메뉴와 단축키](#메뉴와-단축키) |
 
 ## 패널별 사용법
 
@@ -374,11 +378,42 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 
 버전과 제작자를 확인할 수 있습니다.
 
+| 항목 | 내용 |
+|---|---|
+| 제작 | Studying Hamzzi |
+| 도움 | Claude (Anthropic) |
+| 이미지 | AI 생성 |
+| 라이선스 | GPL-3.0-or-later (소스 코드). 전문은 저장소의 [LICENSE](../LICENSE)에 있습니다. |
+
 ### 메뉴와 단축키
 
 **UV 메뉴**: UV 에디터의 UV 메뉴 맨 아래에 **Hamzzi UV Toolkit** 항목이 있습니다. 사이드바의 거의 모든 버튼(정렬, 분배, 타일, 회전, 밀도, Straighten, Stitch, Detach, Relax)을 메뉴에서도 쓸 수 있습니다. 값이 필요한 도구는 사이드바에 적어 둔 값으로 실행됩니다.
 
-**단축키**: 기본으로 정해진 키는 없습니다. Stitch Selected와 Detach Selected만 키 자리가 비어 있는 채로 등록되어 있어서, Edit → Preferences → Keymap에서 `Hamzzi`를 검색하면 UV Editor와 Mesh 목록에 나타납니다. 키를 지정하고 싶은 쪽에서 직접 정하세요. 기존 키와 겹치지 않도록 처음에는 비워 두었습니다.
+**UV 메뉴 여는 방법**
+
+1. 메시 오브젝트를 Edit Mode로 두고 UV 에디터를 엽니다(UV Editing 작업 공간이 편합니다).
+2. UV 에디터 위쪽의 **UV** 메뉴를 엽니다.
+3. 메뉴 맨 아래의 **Hamzzi UV Toolkit**에 마우스를 올리면 Islands, Transform, Texel Density, UV Vertices, Seams, Relax / Unstretch 순서로 기능 목록이 펼쳐집니다.
+
+**단축키**: 기본으로 정해진 키는 없습니다. Stitch Selected와 Detach Selected만 키 자리가 비어 있는 채로 등록되어 있습니다. 기존 키와 겹치지 않도록 처음에는 비워 두었으니 원하는 키를 직접 지정하세요.
+
+*Preferences에서 지정하기 (권장)*
+
+1. Edit → Preferences → Keymap을 엽니다.
+2. 검색 방식을 Name으로 두고 `Stitch` 또는 `Detach`를 검색합니다.
+3. UV Editor와 Mesh 아래에 Stitch Selected, Detach Selected가 `None`으로 나타납니다.
+4. 키 칸을 누르고 원하는 키 조합을 누릅니다. UV 에디터와 3D 뷰포트(Edit Mode) 양쪽에서 쓰려면 UV Editor와 Mesh 둘 다 같은 키로 지정합니다.
+5. Preferences는 자동으로 저장됩니다. 자동 저장이 꺼져 있으면 Save Preferences를 누릅니다.
+
+*UV 메뉴에서 바로 지정하기*
+
+1. UV 메뉴 → Hamzzi UV Toolkit에서 **Stitch Selected** 위에 마우스를 올리고 오른쪽 클릭합니다.
+2. **Assign Shortcut**을 고르고 원하는 키를 누릅니다.
+3. 이 방법은 UV Editor에만 지정됩니다. 3D 뷰포트에서도 쓰려면 위의 Preferences에서 Mesh 쪽도 지정하세요.
+
+- 이미 쓰이는 키와 겹치면 Preferences에 충돌 표시가 나타납니다. 겹치지 않는 조합을 고르세요.
+- 지정한 키를 없애려면 키 칸 옆의 X 버튼을 누릅니다.
+- 메뉴 항목 오른쪽에는 지정한 단축키가 함께 표시됩니다.
 
 ## 작업 예시
 
@@ -396,6 +431,13 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 2. 파란 표시를 보고 짝이 되는 엣지가 어느 아일랜드에 있는지 확인합니다.
 3. Stitch에서 Bias 0, Align과 Scale을 켠 상태로 **Stitch Selected**를 누릅니다.
 4. 이음선이 맞물렸는지 확인합니다. 붙은 아일랜드는 하나로 합쳐지고, 이음선 끝점은 같은 위치에 놓입니다.
+
+### 아일랜드 갈라서 따로 쓰기
+
+1. 가를 선을 이루는 UV 엣지를 아일랜드의 가장자리에서 가장자리까지 선택합니다.
+2. Stitch 패널에서 **Detach Selected**를 누릅니다.
+3. 왼쪽 아래 조정 패널(Adjust Last Operation)에서 **Gap**을 조절해 조각 사이 간격을 정합니다.
+4. 다시 붙이고 싶으면 갈라진 엣지를 선택하고 **Stitch Selected**를 누릅니다.
 
 ### 비뚤어진 엣지 펴기
 
@@ -445,6 +487,9 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 | Select at least two UV vertices | 정점을 정렬하려면 두 개 이상 선택해야 합니다. |
 | Select at least three UV vertices | 정점을 분배하려면 세 개 이상 선택해야 합니다. |
 | Select UV edges that have a matching edge on another island | 선택한 엣지의 짝이 다른 아일랜드에 없습니다. seam이 아니거나 이미 붙어 있는 엣지입니다. |
+| Select a chain of connected UV edges to straighten | Straighten은 이어진 UV 엣지 한 줄이 필요합니다. 정점이 끝이 둘인 한 줄로 이어지도록 엣지를 선택하세요. |
+| Skipped N selection(s) that are loops or branch; select a single open chain | 고리 모양이거나 갈래가 있는 선택은 건너뛰었다는 알림입니다. 끊어진 한 줄만 선택하세요. |
+| Select UV edges that cut an island in two (the cut has to reach the border of the island) | Detach Selected는 아일랜드를 둘로 가르는 선이 필요합니다. 선택한 엣지가 아일랜드의 가장자리까지 이어지게 선택하세요. |
 | Select the UV vertices you want to relax | 풀려는 UV 정점을 선택하세요. |
 | Only outline vertices are selected - select inner vertices or turn off Pin Boundary | 선택한 정점이 모두 아일랜드 윤곽 위에 있습니다. 안쪽 정점을 선택하거나 Pin Boundary를 끄세요. |
 | Relax could not solve N island(s): they have no open UV border; they were left unchanged | UV에 열린 경계가 없는 아일랜드입니다(모든 엣지가 붙어 있음). 풀 수 없어서 그대로 두었습니다. seam을 만들어 UV를 한 곳 이상 갈라서 열린 경계를 만든 뒤 다시 시도하세요. |
@@ -463,8 +508,20 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 | Relax한 뒤 아일랜드가 이웃과 겹친다 | Pin Boundary를 끄고 풀었을 때 생길 수 있습니다. Pin Boundary를 켜면 윤곽이 그대로라서 겹치지 않습니다. |
 | 뒤집힌 면이 칠해지지 않는다 | Transform 패널의 Show Flipped가 켜져 있는지, UV 에디터가 열려 있는지, 면 수가 Face Limit을 넘지 않는지 확인하세요. 숨긴 면은 검사하지 않습니다. |
 | Connected Edges가 보이지 않는다 | 표시가 켜져 있는지, 면 수가 Face Limit을 넘지 않는지 확인하세요. 선택한 엣지의 반대편이 이미 붙어 있으면 표시되지 않습니다. |
-| UV 에디터에서 끌 때 느리거나 Blender가 멈춘다 | Connected Edges의 Show를 끄고 다시 시도하세요. 계속되면 저장소의 Issues에 알려 주세요. |
+| UV 에디터에서 끌 때 느리거나 Blender가 멈춘다 | Connected Edges의 Show를 끄고 다시 시도하세요. 계속되면 [버그와 문의](#버그와-문의)를 참고해 저장소의 Issues에 알려 주세요. |
 | 패널이 이전 버전 모습이다 | 새 zip을 설치한 뒤 Blender를 다시 시작하세요. |
+
+## 버그와 문의
+
+사용하다 버그를 만났거나 궁금한 점, 바라는 기능이 있으면 저장소의 [Issues](https://github.com/STmagi20/HamzziUVWs/issues)에 남겨 주세요.
+
+먼저 같은 내용이 이미 올라와 있는지 찾아보세요. 새로 올릴 때는 아래 내용을 함께 적으면 원인을 찾기 쉽습니다.
+
+- **Blender 버전과 애드온 버전**: 애드온 버전은 About 패널에서 확인합니다.
+- **무엇을 했는지**: 어떤 패널의 어떤 버튼을 눌렀는지, 그때 무엇을 선택했는지(점, 엣지, 면, 아일랜드), UV Sync가 켜져 있었는지 적어 주세요.
+- **무슨 일이 일어났는지**: 기대한 결과와 실제 결과, 화면 아래 상태 표시줄에 나온 경고 문구를 그대로 적어 주세요.
+- **스크린샷**: 실행 전후 UV 에디터 화면이 있으면 큰 도움이 됩니다.
+- 여러 번 반복되는 문제라면 어떤 순서로 하면 다시 나타나는지 적어 주세요.
 
 ## 알려진 한계
 

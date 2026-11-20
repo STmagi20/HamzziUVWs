@@ -10,7 +10,7 @@
 
 - Blender 4.2 이상 (5.2에서 테스트했고, 그 아래 버전에서는 실행해 보지 않았습니다)
 - 제작: StudyingHamzzi
-- 자세한 사용법: [사용 가이드](docs/GUIDE.md)
+- 자세한 사용법: [사용 가이드](docs/GUIDE.md) ([English](docs/GUIDE.en.md), [日本語](docs/GUIDE.ja.md))
 
 ## 화면
 
@@ -86,7 +86,7 @@
 | `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지와 뒤집힌 면 표시 |
 | `HamzziUVToolkit/ui.py` | 사이드바 패널 |
 | `HamzziUVToolkit/menus.py` | UV 메뉴 항목과 Stitch, Detach의 빈 단축키 자리 |
-| `docs/GUIDE.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
+| `docs/GUIDE.md`, `docs/GUIDE.en.md`, `docs/GUIDE.ja.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
 | `tests/` | 자동 테스트 (설치용 zip에는 들어가지 않음) |
 
 버전은 `blender_manifest.toml`에만 적습니다. 패널에 보이는 버전은 이 파일에서 읽어 옵니다.
