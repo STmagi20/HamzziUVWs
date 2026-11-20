@@ -149,14 +149,16 @@ def _ui_display(layout, s):
 
 
 def _ui_title(layout, s):
+    """The title panel is only its header; nothing to draw in the body."""
+
+
+def _title_header(layout):
+    # Blender draws the panel label (bl_label) right after the header icon.
     logo = icons.logo_id()
-    r = layout.row()
-    r.alignment = 'CENTER'
-    text = f"{ADDON_NAME}  v{ADDON_VERSION}"
     if logo:
-        r.label(text=text, icon_value=logo)
+        layout.label(text="", icon_value=logo)
     else:
-        r.label(text=text, icon='UV')
+        layout.label(text="", icon='UV')
 
 
 def _ui_about(layout, s):
@@ -167,14 +169,18 @@ def _ui_about(layout, s):
     else:
         c = layout.column(align=True)
     c.label(text=f"버전: v{ADDON_VERSION}", icon='INFO')
-    c.label(text=f"제작: {ADDON_AUTHOR}", icon='USER')
+    logo = icons.logo_id()
+    if logo:
+        c.label(text=f"제작: {ADDON_AUTHOR}", icon_value=logo)
+    else:
+        c.label(text=f"제작: {ADDON_AUTHOR}", icon='USER')
     if mascot:
         split.template_icon(icon_value=mascot, scale=icons.MASCOT_SCALE)
 
 
 # (key, panel title, draw function, panel options)
 _SECTIONS = (
-    ("title", ADDON_NAME, _ui_title, {'HIDE_HEADER'}),
+    ("title", ADDON_NAME, _ui_title),
     ("align", "Align Islands", _ui_align),
     ("distribute", "Distribute / Sort", _ui_distribute),
     ("tile", "Tile / Pack", _ui_tile),
@@ -198,6 +204,10 @@ class _SectionPanel:
 
     def draw(self, context):
         type(self).section(self.layout, context.scene.uved)
+
+    def draw_header(self, context):
+        if type(self).section is _ui_title:
+            _title_header(self.layout)
 
 
 def _make_panels():
