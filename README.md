@@ -85,6 +85,7 @@
 | `HamzziUVToolkit/operators/` | 도구별 연산자 (`islands`, `density`, `elements`, `stitch`, `relax`) |
 | `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지와 뒤집힌 면 표시 |
 | `HamzziUVToolkit/ui.py` | 사이드바 패널 |
+| `HamzziUVToolkit/menus.py` | UV 메뉴 항목과 Stitch, Detach의 빈 단축키 자리 |
 | `docs/GUIDE.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
 | `tests/` | 자동 테스트 (설치용 zip에는 들어가지 않음) |
 

@@ -21,13 +21,13 @@ visible island is used.
 if "bpy" in locals():
     # the add-on was reloaded in a running Blender: refresh the submodules too
     import importlib
-    for _m in (info, icons, core, properties, islands, density, elements, stitch, relax, overlay, ui):
+    for _m in (info, icons, core, properties, islands, density, elements, stitch, relax, overlay, menus, ui):
         importlib.reload(_m)
 
 import bpy
 from bpy.props import PointerProperty
 
-from . import core, icons, info, overlay, properties, ui
+from . import core, icons, info, menus, overlay, properties, ui
 from .operators import density, elements, islands, relax, stitch
 
 classes = (
@@ -41,6 +41,7 @@ classes = (
     elements.UVED_OT_straighten_edges,
     stitch.UVED_OT_stitch_selected, stitch.UVED_OT_detach_selected,
     relax.UVED_OT_relax, relax.UVED_OT_toggle_stretch,
+    menus.UVED_MT_menu,
 ) + ui.panel_classes
 
 
@@ -50,9 +51,11 @@ def register():
     bpy.types.Scene.uved = PointerProperty(type=properties.UVED_Settings)
     icons.register()
     overlay.register()
+    menus.register()
 
 
 def unregister():
+    menus.unregister()
     overlay.unregister()
     icons.unregister()
     del bpy.types.Scene.uved

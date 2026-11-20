@@ -20,6 +20,7 @@ Hamzzi UV Toolkit은 이미 펼친 UV를 다듬는 Blender 애드온입니다. �
    - [Unstretch](#unstretch)
    - [Connected Edges](#connected-edges)
    - [About](#about)
+   - [메뉴와 단축키](#메뉴와-단축키)
 5. [작업 예시](#작업-예시)
 6. [경고 메시지와 문제 해결](#경고-메시지와-문제-해결)
 7. [알려진 한계](#알려진-한계)
@@ -372,6 +373,12 @@ Relax / Unstretch를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → A
 <img src="images/panel_about.png" alt="About" width="260">
 
 버전과 제작자를 확인할 수 있습니다.
+
+### 메뉴와 단축키
+
+**UV 메뉴**: UV 에디터의 UV 메뉴 맨 아래에 **Hamzzi UV Toolkit** 항목이 있습니다. 사이드바의 거의 모든 버튼(정렬, 분배, 타일, 회전, 밀도, Straighten, Stitch, Detach, Relax)을 메뉴에서도 쓸 수 있습니다. 값이 필요한 도구는 사이드바에 적어 둔 값으로 실행됩니다.
+
+**단축키**: 기본으로 정해진 키는 없습니다. Stitch Selected와 Detach Selected만 키 자리가 비어 있는 채로 등록되어 있어서, Edit → Preferences → Keymap에서 `Hamzzi`를 검색하면 UV Editor와 Mesh 목록에 나타납니다. 키를 지정하고 싶은 쪽에서 직접 정하세요. 기존 키와 겹치지 않도록 처음에는 비워 두었습니다.
 
 ## 작업 예시
 
