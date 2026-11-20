@@ -6,6 +6,7 @@
 import math
 
 import numpy as np
+from bpy.props import BoolProperty, FloatProperty
 from bpy.types import Operator
 from mathutils import Vector
 
@@ -203,17 +204,35 @@ class UVED_OT_stitch_selected(EditOp, Operator):
                       "island. With UV sync on, the island of the active face is the "
                       "'selected' one")
 
-    def execute(self, context):
+    # Own copies of the panel values, so they can be changed in the Adjust Last Operation
+    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    bias: FloatProperty(
+        name="Bias", default=0.0, min=0.0, max=1.0, subtype='FACTOR',
+        description="0 = the selected island stays and the neighbour moves, "
+                    "1 = the neighbour stays and the selected island moves, "
+                    "0.5 = both meet in the middle")
+    align: BoolProperty(
+        name="Align Clusters", default=True,
+        description="Rotate the moving island so the edges line up")
+    scale: BoolProperty(
+        name="Scale Clusters", default=True,
+        description="Scale the moving island so the edges have the same length")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.bias, self.align, self.scale = s.stitch_bias, s.stitch_align, s.stitch_scale
+        return self.execute(context)
+
+    def execute(self, context):
         objs = gather(context)
         stitched = 0
         for o in objs:
             isl = o.islands()
             face_island = {f: i for i in isl for f in i.faces}
             groups = _group_pairs(_find_pairs(o, isl, face_island))
-            n, weld_pairs = _solve_groups(groups, isl, o.uv, s.stitch_bias,
-                                          s.stitch_align, s.stitch_scale)
-            _weld_all(weld_pairs, face_island, o.uv, s.stitch_bias)
+            n, weld_pairs = _solve_groups(groups, isl, o.uv, self.bias,
+                                          self.align, self.scale)
+            _weld_all(weld_pairs, face_island, o.uv, self.bias)
             stitched += n
         finish(objs)
         if not stitched:

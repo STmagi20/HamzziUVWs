@@ -63,10 +63,8 @@ class StitchSelected(unittest.TestCase):
             with self.subTest(bias=bias):
                 helpers.fresh()
                 helpers.enter_edit([build_grid(nx, ny, xforms, group)])
-                s = helpers.settings()
-                s.stitch_bias, s.stitch_align, s.stitch_scale = bias, align, scale
                 self.assertGreater(state()[0], 1)
-                self.assertEqual(bpy.ops.uved.stitch_selected(), {'FINISHED'})
+                self.assertEqual(bpy.ops.uved.stitch_selected(bias=bias, align=align, scale=scale), {'FINISHED'})
                 islands, gap = state()
                 self.assertEqual(islands, 1)
                 self.assertLess(gap, 1e-5)
@@ -88,6 +86,20 @@ class StitchSelected(unittest.TestCase):
         mir = dict(self.rand)
         mir[1] = transform(0.4, 1.3, 0.5, 0.5, mirror=True)
         self.run_case(3, 1, mir, lambda x, y: x)
+
+
+class StitchOptions(unittest.TestCase):
+    """The button copies the panel values into the operator (invoke). A background Blender
+    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
+
+    def test_operator_defaults_match_the_panel_defaults(self):
+        helpers.fresh()
+        panel = helpers.settings().bl_rna.properties
+        op = bpy.ops.uved.stitch_selected.get_rna_type().properties
+        for mine, theirs in (("bias", "stitch_bias"), ("align", "stitch_align"),
+                             ("scale", "stitch_scale")):
+            with self.subTest(option=mine):
+                self.assertEqual(op[mine].default, panel[theirs].default)
 
 
 if __name__ == "__main__":
