@@ -77,5 +77,20 @@ class AutoOrientOperator(unittest.TestCase):
         self.assertAlmostEqual(h, 3.0, places=6)
 
 
+class OrientToEdge(unittest.TestCase):
+    def tearDown(self):
+        helpers.leave_edit()
+
+    def test_the_longest_selected_edge_is_used(self):
+        helpers.fresh()
+        # edges: A-B 1.02 long (11 deg), B-C 0.32, C-D 1.10 (about 175 deg), D-A 0.40
+        ob = helpers.polygon_object([(0, 0), (1, 0.2), (1.1, 0.5), (0, 0.4)])
+        helpers.enter_edit([ob])
+        self.assertEqual(bpy.ops.uved.orient_to_edge(), {'FINISHED'})
+        c, d = (helpers.islands()[0].pts()[2:4])
+        self.assertAlmostEqual(float(d[1] - c[1]), 0.0, places=5)     # the long edge C-D is now level
+        self.assertLess(float(d[0] - c[0]), 0.0)                      # and was only rotated, not flipped
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -460,25 +460,28 @@ class UVED_OT_auto_orient(EditOp, Operator):
 class UVED_OT_orient_to_edge(EditOp, Operator):
     bl_idname = "uved.orient_to_edge"
     bl_label = "Orient to Edge"
-    bl_description = "Rotate each island so its selected UV edge lies on the nearest axis"
+    bl_description = ("Rotate each island so its longest selected UV edge lies on the nearest "
+                      "axis")
 
     def execute(self, context):
         objs, isl = targets(context)
         done = 0
         for i in isl:
             uv = i.obj.uv
+            longest = None
             for l in i.loops:
                 n = l.link_loop_next
                 if i.obj.selected(l) and i.obj.selected(n):
                     d = n[uv].uv - l[uv].uv
-                    if d.length < EPS:
-                        continue
-                    a = math.atan2(d.y, d.x)
-                    rot = -(a - round(a / (math.pi / 2)) * (math.pi / 2))
-                    cx, cy = i.center()
-                    i.rotate(rot, cx, cy)
-                    done += 1
-                    break
+                    if d.length >= EPS and (longest is None or d.length > longest.length):
+                        longest = d.copy()
+            if longest is None:
+                continue
+            a = math.atan2(longest.y, longest.x)
+            rot = -(a - round(a / (math.pi / 2)) * (math.pi / 2))
+            cx, cy = i.center()
+            i.rotate(rot, cx, cy)
+            done += 1
         if not done:
             self.report({'WARNING'}, "Select a UV edge inside the island")
             return {'CANCELLED'}
