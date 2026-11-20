@@ -76,19 +76,17 @@ class Density(unittest.TestCase):
     def test_set_density_to_a_value(self):
         ob = helpers.plane_object(scale=(2, 1, 1))
         helpers.enter_edit([ob])
-        s = helpers.settings()
-        s.texture_size, s.target_density = SIZE, 512.0
-        self.assertEqual(bpy.ops.uved.set_density(source='VALUE'), {'FINISHED'})
+        self.assertEqual(bpy.ops.uved.set_density(source='VALUE', texture_size=SIZE,
+                                                  target_density=512.0), {'FINISHED'})
         self.assertAlmostEqual(helpers.islands()[0].density(SIZE), 512.0, places=4)
 
     def test_equalize_makes_different_objects_match(self):
         a = helpers.plane_object(scale=(1, 1, 1), name="a")
         b = helpers.plane_object(scale=(4, 1, 1), uv_size=(0.2, 0.7), name="b")
         helpers.enter_edit([a, b])
-        helpers.settings().texture_size = SIZE
         before = [i.density(SIZE) for i in helpers.islands()]
         self.assertGreater(abs(before[0] - before[1]), 1.0)
-        self.assertEqual(bpy.ops.uved.set_density(source='AVERAGE'), {'FINISHED'})
+        self.assertEqual(bpy.ops.uved.set_density(source='AVERAGE', texture_size=SIZE), {'FINISHED'})
         after = [i.density(SIZE) for i in helpers.islands()]
         self.assertAlmostEqual(after[0], after[1], places=4)
         self.assertAlmostEqual(after[0], sum(before) / 2, places=4)
@@ -101,6 +99,19 @@ class Density(unittest.TestCase):
         self.assertEqual(bpy.ops.uved.get_density(), {'FINISHED'})
         self.assertAlmostEqual(helpers.settings().target_density,
                                math.sqrt(0.25 / 6.0) * SIZE, places=4)
+
+
+class DensityOptions(unittest.TestCase):
+    """The buttons copy the panel values into the operator (invoke). A background Blender
+    has no window, so it never calls invoke: that part has to be checked in a GUI session."""
+
+    def test_operator_defaults_match_the_panel_defaults(self):
+        helpers.fresh()
+        panel = helpers.settings().bl_rna.properties
+        op = bpy.ops.uved.set_density.get_rna_type().properties
+        for name in ("texture_size", "target_density"):
+            with self.subTest(option=name):
+                self.assertEqual(op[name].default, panel[name].default)
 
 
 if __name__ == "__main__":

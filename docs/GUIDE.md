@@ -221,6 +221,8 @@ Blender 4.2 이상이 필요합니다. 테스트는 5.2에서 했고, 그 아래
 | Equalize | 선택한 아일랜드를 평균 밀도로 통일합니다. 전체 크기는 비슷하게 유지됩니다. |
 | Active | 활성 면(마지막에 클릭한 면)이 속한 아일랜드의 밀도에 맞춥니다. |
 
+Apply를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → Adjust Last Operation)의 조정 패널에서 Texture Size와 Target (px/m)을 바꿔 결과를 보면서 다듬을 수 있습니다. 패널의 설정값은 바뀌지 않고, 누를 때마다 패널 값으로 다시 시작합니다. Equalize와 Active는 UV에서 잰 밀도를 쓰므로 조정할 값이 없습니다.
+
 측정 결과는 두 가지 형태로 표시됩니다.
 
 - `Measured: 512.0 px/m (4 islands, uniform)`: 밀도가 모두 같습니다.

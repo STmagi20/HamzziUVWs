@@ -3,7 +3,7 @@
 
 """Texel density: measure and set."""
 
-from bpy.props import EnumProperty
+from bpy.props import EnumProperty, FloatProperty, IntProperty
 from bpy.types import Operator
 
 from ..core import EditOp, finish, targets
@@ -56,16 +56,38 @@ class UVED_OT_set_density(EditOp, Operator):
                       "that holds the active face",
         }[properties.source] + ". Islands are resized around their own center and may overlap"
 
-    def execute(self, context):
+    # Own copies of the panel values, so they can be changed in the Adjust Last Operation
+    # panel after the run. Pressing the button starts them from the panel (see invoke).
+    # Equalize and Active copy a density measured from the UVs, so only Target Value
+    # offers anything to adjust.
+    texture_size: IntProperty(
+        name="Texture Size", default=1024, min=1, max=65536,
+        description="Texture width in pixels. Only used to express density as px/m")
+    target_density: FloatProperty(
+        name="Target (px/m)", default=512.0, min=0.0, soft_max=8192.0,
+        description="Texture pixels per metre of 3D surface")
+
+    def invoke(self, context, event):
         s = context.scene.uved
+        self.texture_size, self.target_density = s.texture_size, s.target_density
+        return self.execute(context)
+
+    def draw(self, context):
+        if self.source == 'VALUE':
+            self.layout.prop(self, "texture_size")
+            self.layout.prop(self, "target_density")
+        else:
+            self.layout.label(text="Nothing to adjust: the density is measured from the UVs")
+
+    def execute(self, context):
         objs, isl = targets(context)
-        dens = [(i, i.density(s.texture_size)) for i in isl]
+        dens = [(i, i.density(self.texture_size)) for i in isl]
         dens = [(i, d) for i, d in dens if d > 0]
         if not dens:
             self.report({'WARNING'}, "No measurable islands")
             return {'CANCELLED'}
         if self.source == 'VALUE':
-            target = s.target_density
+            target = self.target_density
             if target <= 0:
                 self.report({'WARNING'}, "Target (px/m) must be above zero")
                 return {'CANCELLED'}
@@ -78,7 +100,7 @@ class UVED_OT_set_density(EditOp, Operator):
                 if af is not None:
                     for i in o.islands():
                         if af in i.faces:
-                            target = i.density(s.texture_size)
+                            target = i.density(self.texture_size)
             if target <= 0:
                 self.report({'WARNING'}, "No active face - select a face first")
                 return {'CANCELLED'}
@@ -86,7 +108,7 @@ class UVED_OT_set_density(EditOp, Operator):
             k = target / d
             cx, cy = i.center()
             i.scale(k, k, cx, cy)
-        s.readout = ""      # the last measurement no longer describes these UVs
+        context.scene.uved.readout = ""      # the last measurement no longer describes these UVs
         finish(objs)
         self.report({'INFO'}, f"Set {len(dens)} island(s) to {target:.1f} px/m")
         return {'FINISHED'}
