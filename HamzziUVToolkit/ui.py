@@ -109,6 +109,7 @@ def _ui_vertices(layout, s):
     r = layout.row(align=True)
     _op(r, "uved.distribute_elements", "Distribute U", axis='U')
     _op(r, "uved.distribute_elements", "Distribute V", axis='V')
+    layout.operator("uved.straighten_edges", text="Straighten", icon='IPO_LINEAR')
 
 
 def _ui_stitch(layout, s):

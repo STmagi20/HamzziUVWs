@@ -86,3 +86,81 @@ class UVED_OT_distribute_elements(EditOp, Operator):
                 l[o.uv].uv = p
         finish(objs)
         return {'FINISHED'}
+
+
+def _chains(sel):
+    """Group the selected UV corners by position and join those that sit on a selected
+    edge. Returns (chains, skipped): each chain is a list of positions from one end to
+    the other, `skipped` counts connected pieces that are not a plain line (a loop or
+    a branch)."""
+    corners = {}
+    for o, l in sel:
+        p = l[o.uv].uv
+        corners.setdefault((id(o), round(p.x / EPS), round(p.y / EPS)), []).append((o, l))
+    links = {k: set() for k in corners}
+    for key, group in corners.items():
+        for o, l in group:
+            nxt = l.link_loop_next
+            if not o.selected(nxt):
+                continue
+            p = nxt[o.uv].uv
+            other = (id(o), round(p.x / EPS), round(p.y / EPS))
+            if other != key and other in links:
+                links[key].add(other)
+                links[other].add(key)
+    chains, skipped, seen = [], 0, set()
+    for start in links:
+        if start in seen or not links[start]:
+            continue
+        piece, todo = [], [start]
+        while todo:
+            k = todo.pop()
+            if k not in seen:
+                seen.add(k)
+                piece.append(k)
+                todo.extend(links[k])
+        ends = [k for k in piece if len(links[k]) == 1]
+        if len(ends) != 2 or any(len(links[k]) > 2 for k in piece):
+            skipped += 1
+            continue
+        order, prev, cur = [], None, ends[0]
+        while cur is not None:
+            order.append(cur)
+            nxt = [k for k in links[cur] if k != prev]
+            prev, cur = cur, (nxt[0] if nxt else None)
+        chains.append([corners[k] for k in order])
+    return chains, skipped
+
+
+class UVED_OT_straighten_edges(EditOp, Operator):
+    bl_idname = "uved.straighten_edges"
+    bl_label = "Straighten UV Edges"
+    bl_description = ("Put each chain of selected UV edges on the straight line between its two "
+                      "end vertices, keeping the spacing between the vertices in proportion")
+
+    def execute(self, context):
+        objs, sel = _selected_loops(context)
+        chains, skipped = _chains(sel)
+        moved = 0
+        for chain in chains:
+            pts = [g[0][1][g[0][0].uv].uv.copy() for g in chain]
+            seg = [(b - a).length for a, b in zip(pts, pts[1:])]
+            total = sum(seg)
+            if total < EPS:
+                continue
+            run = 0.0
+            for n, group in enumerate(chain):
+                if n:
+                    run += seg[n - 1]
+                p = pts[0] + (pts[-1] - pts[0]) * (run / total)
+                for o, l in group:
+                    l[o.uv].uv = p
+            moved += 1
+        if not moved:
+            self.report({'WARNING'}, "Select a chain of connected UV edges to straighten")
+            return {'CANCELLED'}
+        if skipped:
+            self.report({'WARNING'}, f"Skipped {skipped} selection(s) that are loops or branch; "
+                                     "select a single open chain")
+        finish(objs)
+        return {'FINISHED'}

@@ -38,6 +38,7 @@ classes = (
     islands.UVED_OT_auto_orient, islands.UVED_OT_orient_to_edge,
     density.UVED_OT_get_density, density.UVED_OT_set_density,
     elements.UVED_OT_align_elements, elements.UVED_OT_distribute_elements,
+    elements.UVED_OT_straighten_edges,
     stitch.UVED_OT_stitch_selected,
     relax.UVED_OT_relax, relax.UVED_OT_toggle_stretch,
 ) + ui.panel_classes

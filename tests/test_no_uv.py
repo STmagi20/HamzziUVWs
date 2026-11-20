@@ -13,7 +13,8 @@ CALLS = [
     ("transform_islands", {"mode": 'CCW90'}), ("auto_orient", {"target": 'HORIZONTAL'}),
     ("orient_to_edge", {}), ("scale_islands", {}), ("get_density", {}),
     ("set_density", {"source": 'AVERAGE'}), ("align_elements", {"mode": 'U_AVG'}),
-    ("distribute_elements", {"axis": 'U'}), ("stitch_selected", {}), ("relax", {}),
+    ("distribute_elements", {"axis": 'U'}),
+    ("straighten_edges", {}), ("stitch_selected", {}), ("relax", {}),
 ]
 
 

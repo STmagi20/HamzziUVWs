@@ -252,10 +252,12 @@ Apply를 누른 직후에는 Blender 왼쪽 아래(또는 Edit → Adjust Last O
 | ![세로 가운데](images/icon_align_middle.png) | 선택한 정점을 평균 세로 위치에 맞춰 가로 일직선으로 만듭니다. |
 | ![위](images/icon_align_top.png) | 선택한 정점을 가장 위 정점에 맞춰 가로 일직선으로 만듭니다. |
 | Distribute U / V | 양 끝 정점은 그대로 두고 나머지를 같은 간격으로 놓습니다. |
+| Straighten | 이어진 UV 엣지 한 줄을 양 끝 정점을 잇는 직선 위에 놓습니다. 정점 사이의 간격 비율은 원래대로 유지합니다. |
 
 - 정점을 정렬하려면 두 개 이상, 분배하려면 세 개 이상 선택해야 합니다.
 - 분배는 U 또는 V 한 방향으로만 움직이고, 정점의 순서는 지금 놓인 순서를 따릅니다.
-- 엣지 한 줄을 반듯하게 만들려면 그 줄의 정점을 선택합니다. 세로로 선 줄이면 ![가로 가운데](images/icon_align_center.png) 버튼으로 일직선을 만든 뒤 Distribute V로, 가로로 누운 줄이면 ![세로 가운데](images/icon_align_middle.png) 버튼으로 일직선을 만든 뒤 Distribute U로 간격을 고르게 합니다.
+- **Straighten**은 선택한 정점이 끝이 둘인 한 줄로 이어져 있어야 합니다. 고리 모양이거나 갈래가 있으면 건너뛰고 경고를 냅니다. 양 끝 정점은 움직이지 않고, 비스듬한 줄은 비스듬한 채로 펴집니다. 줄이 여러 개여도 각각 따로 펴집니다.
+- 엣지 한 줄을 반듯하게 만들려면 그 줄의 정점을 선택합니다. 원래 간격 비율을 지키고 싶다면 Straighten을 쓰세요. 세로로 선 줄이면 ![가로 가운데](images/icon_align_center.png) 버튼으로 일직선을 만든 뒤 Distribute V로, 가로로 누운 줄이면 ![세로 가운데](images/icon_align_middle.png) 버튼으로 일직선을 만든 뒤 Distribute U로 간격을 고르게 합니다.
 
 ### Stitch
 
