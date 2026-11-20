@@ -6,7 +6,9 @@
 
 <p align="center">이미 펼친 UV를 정리하는 Blender 애드온</p>
 
-사이드바 버튼으로 흩어진 아일랜드를 정렬해 타일 안에 배치하고, 이음선을 붙이고, 늘어진 UV를 풀고, 텍셀 밀도를 맞출 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
+<p align="center"><b>한국어</b> | <a href="README.en.md">English</a> | <a href="README.ja.md">日本語</a></p>
+
+이미 펼쳐 둔 UV를 손보는 도구 모음입니다. 아일랜드 정렬과 타일 배치, 이음선 붙이기, 늘어진 UV 풀기, 텍셀 밀도 맞추기를 사이드바 버튼으로 할 수 있습니다. UV를 새로 펼치는 기능은 없습니다.
 
 - Blender 4.2 이상 (5.2에서 테스트했고, 그 아래 버전에서는 실행해 보지 않았습니다)
 - 제작: StudyingHamzzi
@@ -19,7 +21,7 @@
 <table>
   <tr>
     <td valign="top"><img src="docs/images/sidebar.png" alt="Hamzzi UV Toolkit 사이드바" width="250"></td>
-    <td valign="top"><img src="docs/images/pack.png" alt="Pack into Tile 전후" width="620"><br><sub>Pack into Tile: 흩어진 아일랜드가 한 번에 타일 안에 정리됩니다.</sub></td>
+    <td valign="top"><img src="docs/images/pack.png" alt="Pack into Tile 전후" width="620"><br><sub>Pack into Tile 한 번으로 흩어진 아일랜드를 타일 안에 모은 모습</sub></td>
   </tr>
 </table>
 
@@ -33,7 +35,7 @@
 | Transform | 회전(90°, 180°, 원하는 각도), 뒤집기, 자동 방향 맞춤, 선택 엣지를 축에 맞춤, U·V 배율 조정, UV가 뒤집힌 면을 빨간색으로 표시 |
 | Texel Density | 밀도 측정, 목표값 적용, 평균으로 통일, 활성 면의 밀도에 맞춤 |
 | UV Vertices | 선택한 UV 정점의 정렬, 균등 분배, 엣지 한 줄 직선으로 펴기 (Straighten) |
-| Stitch | 선택한 UV 엣지를 이웃 아일랜드의 같은 엣지에 붙임. 모양이 달라도 이음선 끝점이 정확히 붙음. 반대로 Detach Selected는 선택한 엣지에서 아일랜드를 가름 |
+| Stitch | 선택한 UV 엣지를 이웃 아일랜드의 같은 엣지에 붙임. 두 엣지의 모양이 달라도 끝점을 맞춰 붙임. Detach Selected는 반대로 선택한 엣지를 따라 아일랜드를 가름 |
 | Unstretch | 늘어난 UV를 3D 표면의 비율에 가깝게 다시 계산, 스트레치 표시 켜고 끄기 |
 | Connected Edges | 선택한 점·선·면이 다른 아일랜드의 어디로 이어지는지 파란색으로 표시 |
 
@@ -44,12 +46,12 @@
 3. 오른쪽 위 화살표 메뉴에서 **Install from Disk**를 고르고 받은 zip을 선택합니다.
 4. 설치가 끝나면 애드온이 켜져 있는지 확인합니다.
 
-> 초록색 Code 버튼의 Download ZIP은 저장소 전체를 담고 있어 그대로 설치할 수 없습니다. 애드온 본체는 `HamzziUVToolkit/` 폴더 안에 있습니다.
+> 초록색 Code 버튼의 Download ZIP은 저장소 전체라서 그대로는 설치되지 않습니다. 애드온 본체는 `HamzziUVToolkit/` 폴더입니다.
 
 <table>
   <tr>
     <td><img src="docs/images/Ham_Body_UV_UP.png" alt="UPDATE" width="130"></td>
-    <td valign="middle"><b>업데이트할 때</b>는 새 zip 파일을 같은 방법으로 설치해 주세요. 패널이 이전 모습이라면 Blender를 다시 시작합니다.</td>
+    <td valign="middle"><b>업데이트할 때</b>는 새 zip을 같은 방법으로 설치합니다. 패널이 예전 모습 그대로면 Blender를 다시 시작하세요.</td>
   </tr>
 </table>
 
@@ -59,16 +61,20 @@
 2. UV 에디터를 열고 N 키로 사이드바를 연 뒤 **Hamzzi UV Toolkit** 탭을 누릅니다.
 3. 아일랜드 도구는 선택한 아일랜드에 적용되고, 아무것도 선택하지 않으면 보이는 아일랜드 전체에 적용됩니다. 실행한 도구는 Ctrl+Z로 되돌릴 수 있습니다.
 
-예를 들어 흩어진 아일랜드를 정리하려면 **Tile / Pack**에서 U 0, V 0을 확인하고 **Pack into Tile**을 누릅니다. 모든 도구의 사용법과 작업 예시는 [사용 가이드](docs/GUIDE.md)에 있습니다.
+예를 들어 흩어진 아일랜드를 정리하려면 **Tile / Pack**에서 U 0, V 0을 확인하고 **Pack into Tile**을 누릅니다. 나머지 도구의 사용법과 작업 예시는 [사용 가이드](docs/GUIDE.md)에 적어 두었습니다.
 
 ## 알려진 한계
 
 - Stitch는 선택한 엣지에만 동작하며, 가까운 엣지를 자동으로 찾아 붙이지는 않습니다.
 - Unstretch는 브러시가 아니라 선택 영역에 한 번에 적용됩니다.
-- 구처럼 평평하게 펼 수 없는 형태를 강제로 펴는 기능은 아직 없습니다.
+- 구처럼 평평하게 펼 수 없는 형태를 억지로 펴는 기능은 없습니다.
 - Pack into Tile은 아일랜드의 경계 상자를 기준으로 배치하고 회전하지 않습니다. 복잡한 모양을 빈틈없이 끼워 넣으려면 Blender의 Pack Islands가 더 촘촘하게 배치합니다.
 - Connected Edges는 Edit Mode의 면이 Face Limit(기본 1만 개)을 넘으면 표시를 건너뛰고, UV 에디터에 안내 문구를 띄웁니다.
 - 패널의 버튼 이름은 영어입니다.
+
+## 버그와 문의
+
+궁금한 점, 버그, 바라는 기능은 [Issues](https://github.com/STmagi20/HamzziUVWs/issues)에 남겨 주세요. 버그라면 Blender 버전, 어떤 버튼을 눌렀을 때 일어났는지, 화면에 뜬 경고 문구를 함께 적어 주시면 확인하기 쉽습니다. 자세한 안내는 [사용 가이드](docs/GUIDE.md#버그와-문의)에 있습니다.
 
 ## 개발
 
@@ -86,6 +92,7 @@
 | `HamzziUVToolkit/overlay.py` | UV 에디터의 연결 엣지와 뒤집힌 면 표시 |
 | `HamzziUVToolkit/ui.py` | 사이드바 패널 |
 | `HamzziUVToolkit/menus.py` | UV 메뉴 항목과 Stitch, Detach의 빈 단축키 자리 |
+| `README.en.md`, `README.ja.md` | 이 README의 영어판과 일본어판 |
 | `docs/GUIDE.md`, `docs/GUIDE.en.md`, `docs/GUIDE.ja.md`, `docs/images/` | 사용 가이드와 그림 (설치용 zip에는 들어가지 않음) |
 | `tests/` | 자동 테스트 (설치용 zip에는 들어가지 않음) |
 
